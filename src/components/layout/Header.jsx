@@ -1,7 +1,10 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Link, NavLink } from 'react-router-dom'
-import { FiSearch, FiShoppingBag, FiMenu, FiX, FiShield } from 'react-icons/fi'
+import { Link, NavLink, useNavigate } from 'react-router-dom'
+import { FiSearch, FiShoppingBag, FiMenu, FiX, FiShield, FiLogOut, FiUser } from 'react-icons/fi'
+import { useAuth } from '../../context/AuthContext.jsx'
+import { signOut } from '../../services/authService.js'
+import toast from 'react-hot-toast'
 
 const navItems = [
   { label: 'Inicio', path: '/' },
@@ -13,6 +16,8 @@ const navItems = [
 function Header() {
   const [open, setOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
+  const { isAuthenticated, openLoginModal } = useAuth()
+  const navigate = useNavigate()
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20)
@@ -20,6 +25,12 @@ function Header() {
     window.addEventListener('scroll', handleScroll)
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
+
+  async function handleLogout() {
+    await signOut()
+    toast.success('Sesión cerrada correctamente')
+    navigate('/')
+  }
 
   return (
     <header
@@ -54,7 +65,7 @@ function Header() {
           ))}
         </nav>
 
-        <div className="hidden items-center gap-4 md:flex">
+        <div className="hidden items-center gap-3 md:flex">
           <button
             type="button"
             aria-label="Buscar"
@@ -69,10 +80,26 @@ function Header() {
           >
             <FiShoppingBag size={18} />
           </Link>
-          <div className="hidden items-center gap-2 rounded-full border border-[#D4AF37]/20 bg-white/5 px-3 py-2 text-xs uppercase tracking-[0.2em] text-[#D4AF37]/90 md:flex">
-            <FiShield size={14} />
-            Panel admin
-          </div>
+
+          {isAuthenticated && (
+            <div className="flex items-center gap-2">
+              <Link
+                to="/dashboard"
+                className="flex items-center gap-2 rounded-full border border-[#D4AF37]/40 bg-[#D4AF37]/10 px-4 py-2 text-xs uppercase tracking-[0.2em] text-[#D4AF37] transition hover:bg-[#D4AF37]/20"
+              >
+                <FiShield size={14} />
+                Dashboard
+              </Link>
+              <button
+                type="button"
+                onClick={handleLogout}
+                title="Cerrar sesión"
+                className="grid h-11 w-11 place-items-center rounded-full border border-red-500/20 bg-red-500/10 text-red-400 transition hover:border-red-500/40 hover:bg-red-500/20"
+              >
+                <FiLogOut size={16} />
+              </button>
+            </div>
+          )}
         </div>
 
         <button
@@ -105,9 +132,6 @@ function Header() {
                 </Link>
               ))}
               <div className="grid gap-3">
-                <button className="rounded-3xl border border-[#D4AF37]/20 bg-white/5 px-4 py-3 text-left text-sm uppercase tracking-[0.22em] text-[#D4AF37] transition hover:border-[#D4AF37]/40 hover:bg-white/10">
-                  Buscar
-                </button>
                 <Link
                   to="/cart"
                   onClick={() => setOpen(false)}
@@ -115,6 +139,29 @@ function Header() {
                 >
                   Carrito
                 </Link>
+
+                {isAuthenticated && (
+                  <>
+                    <Link
+                      to="/dashboard"
+                      onClick={() => setOpen(false)}
+                      className="flex items-center gap-2 rounded-3xl border border-[#D4AF37]/40 bg-[#D4AF37]/10 px-4 py-3 text-sm uppercase tracking-[0.22em] text-[#D4AF37]"
+                    >
+                      <FiShield size={16} />
+                      Dashboard Admin
+                    </Link>
+                    <button
+                      onClick={() => {
+                        setOpen(false)
+                        handleLogout()
+                      }}
+                      className="flex items-center gap-2 rounded-3xl border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm uppercase tracking-[0.22em] text-red-400"
+                    >
+                      <FiLogOut size={16} />
+                      Cerrar sesión
+                    </button>
+                  </>
+                )}
               </div>
             </div>
           </motion.div>
@@ -125,3 +172,4 @@ function Header() {
 }
 
 export default Header
+

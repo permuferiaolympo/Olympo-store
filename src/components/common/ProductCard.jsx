@@ -28,7 +28,7 @@ function ProductCard({ product }) {
         <div>
           <p className="text-xs uppercase tracking-[0.28em] text-[#D4AF37]/80">{product.size}</p>
           <Link
-            to={`/product/${product.id}`}
+            to={`/product/${product.slug || product.id}`}
             className="mt-2 block text-2xl font-[TrajanPro] uppercase tracking-[0.14em] text-white transition hover:text-[#D4AF37]"
           >
             {product.name}

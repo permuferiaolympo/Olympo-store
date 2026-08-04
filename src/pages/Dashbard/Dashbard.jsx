@@ -1,39 +1,46 @@
+import { Link } from 'react-router-dom'
+import { FiPlusCircle, FiPackage } from 'react-icons/fi'
 import SectionHeader from '../../components/common/SectionHeader.jsx'
 
 function Dashbard() {
   return (
     <div className="space-y-12">
-      <SectionHeader
-        pretitle="Panel administrativo"
-        title="Vista preliminar"
-        children="Estructura visual preparada para el futuro panel de administración sin lógica de autenticación aún."
-      />
-      <div className="grid gap-6 lg:grid-cols-3">
-        <div className="rounded-[2rem] border border-white/10 bg-white/5 p-8 text-white">
-          <p className="text-xs uppercase tracking-[0.35em] text-[#D4AF37]/70">Pedidos</p>
-          <h3 className="mt-3 text-3xl font-[TrajanPro] uppercase tracking-[0.14em] text-white">24</h3>
-          <p className="mt-4 text-sm leading-7 text-white/70">Ordenes nuevas por revisar y procesar.</p>
-        </div>
-        <div className="rounded-[2rem] border border-white/10 bg-white/5 p-8 text-white">
-          <p className="text-xs uppercase tracking-[0.35em] text-[#D4AF37]/70">Catálogo</p>
-          <h3 className="mt-3 text-3xl font-[TrajanPro] uppercase tracking-[0.14em] text-white">6</h3>
-          <p className="mt-4 text-sm leading-7 text-white/70">Productos activos listos para destacar en la tienda.</p>
-        </div>
-        <div className="rounded-[2rem] border border-white/10 bg-white/5 p-8 text-white">
-          <p className="text-xs uppercase tracking-[0.35em] text-[#D4AF37]/70">Usuarios</p>
-          <h3 className="mt-3 text-3xl font-[TrajanPro] uppercase tracking-[0.14em] text-white">89</h3>
-          <p className="mt-4 text-sm leading-7 text-white/70">Suscriptores que recibieron la experiencia OLIMPO.</p>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <SectionHeader
+          pretitle="Panel administrativo"
+          title="Gestión de Tienda"
+          children="Administra tus productos, imágenes y configuración general de la tienda."
+        />
+        <div>
+          <Link
+            to="/dashboard/create-product"
+            className="inline-flex items-center gap-3 rounded-full bg-gradient-to-r from-[#D4AF37] to-[#AA7C11] px-6 py-4 text-xs font-semibold uppercase tracking-[0.25em] text-black shadow-[0_0_30px_rgba(212,175,55,0.2)] transition hover:brightness-110 active:scale-[0.99]"
+          >
+            <FiPlusCircle size={18} />
+            Crear Producto
+          </Link>
         </div>
       </div>
-      <div className="grid gap-6 lg:grid-cols-2">
-        <div className="rounded-[2rem] border border-white/10 bg-white/5 p-8 text-white">
-          <p className="text-xs uppercase tracking-[0.35em] text-[#D4AF37]/70">Resumen</p>
-          <p className="mt-4 text-sm leading-7 text-white/70">Panel diseñado para recibir gráficos, control de inventario y tareas administrativas con una estética premium y una interfaz refinada.</p>
+      
+      {/* TARJETA DESTACADA: CREAR NUEVO PRODUCTO */}
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-6 rounded-[2.5rem] border border-[#D4AF37]/40 bg-gradient-to-r from-black/90 via-[#18181b] to-black/90 p-8 sm:p-10 backdrop-blur-xl shadow-[0_40px_120px_-60px_rgba(212,175,55,0.3)]">
+        <div className="space-y-2 text-center sm:text-left">
+          <div className="inline-flex items-center gap-2 rounded-full bg-[#D4AF37]/10 px-3 py-1 text-xs text-[#D4AF37] uppercase tracking-widest border border-[#D4AF37]/20">
+            <FiPackage size={14} />
+            Gestión de Inventario
+          </div>
+          <h3 className="text-2xl font-[TrajanPro] uppercase tracking-[0.14em] text-white">¿Nuevo perfume en el catálogo?</h3>
+          <p className="text-sm text-white/70 max-w-xl">
+            Sube la imagen directamente a Cloudflare R2, asigna precio, categoría y guarda la referencia en la base de datos de Supabase.
+          </p>
         </div>
-        <div className="rounded-[2rem] border border-white/10 bg-white/5 p-8 text-white">
-          <p className="text-xs uppercase tracking-[0.35em] text-[#D4AF37]/70">Accesos</p>
-          <p className="mt-4 text-sm leading-7 text-white/70">Secciones preparadas para pedidos, productos, usuarios y ajustes sin conexión a la lógica de backend todavía.</p>
-        </div>
+        <Link
+          to="/dashboard/create-product"
+          className="flex-shrink-0 flex items-center gap-3 rounded-full bg-[#D4AF37] px-8 py-4 text-xs font-semibold uppercase tracking-[0.25em] text-black transition hover:bg-[#e2bd47]"
+        >
+          <FiPlusCircle size={18} />
+          Agregar Producto
+        </Link>
       </div>
     </div>
   )

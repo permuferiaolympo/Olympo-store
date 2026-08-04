@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
 import CategoryCard from '../../components/common/CategoryCard.jsx'
@@ -5,10 +6,40 @@ import ProductCard from '../../components/common/ProductCard.jsx'
 import SectionHeader from '../../components/common/SectionHeader.jsx'
 import BrandChip from '../../components/common/BrandChip.jsx'
 import TestimonialCard from '../../components/common/TestimonialCard.jsx'
-import { benefits, brands, categories, products, testimonials } from '../../constants/mockData.jsx'
+import { getFeaturedPerfumes } from '../../services/perfumeService.js'
+import { getCategories } from '../../services/categoryService.js'
+import { benefits, brands, testimonials } from '../../constants/mockData.jsx'
 
 function Home() {
-  const featuredProducts = products.slice(0, 4)
+  const [perfumes, setPerfumes] = useState([])
+  const [categories, setCategories] = useState([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const [perfumesData, categoriesData] = await Promise.all([
+          getFeaturedPerfumes(),
+          getCategories(),
+        ])
+        setPerfumes(perfumesData)
+        setCategories(categoriesData)
+      } catch (err) {
+        console.error('Error loading home data:', err)
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchData()
+  }, [])
+
+  if (loading) {
+    return (
+      <div className="flex min-h-[60vh] items-center justify-center">
+        <div className="h-10 w-10 animate-spin rounded-full border-2 border-[#D4AF37] border-t-transparent" />
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-24">
@@ -43,31 +74,35 @@ function Home() {
         </motion.div>
       </section>
 
-      <section className="space-y-12">
-        <SectionHeader
-          pretitle="Colecciones exclusivas"
-          title="Nuestras categorías"
-          children="Tres universos olfativos que combinan tradición, noche y pureza en un solo escaparate premium."
-        />
-        <div className="grid gap-6 lg:grid-cols-3">
-          {categories.map((category) => (
-            <CategoryCard key={category.id} {...category} />
-          ))}
-        </div>
-      </section>
+      {categories.length > 0 && (
+        <section className="space-y-12">
+          <SectionHeader
+            pretitle="Colecciones exclusivas"
+            title="Nuestras categorías"
+            children="Tres universos olfativos que combinan tradición, noche y pureza en un solo escaparate premium."
+          />
+          <div className="grid gap-6 lg:grid-cols-3">
+            {categories.map((category) => (
+              <CategoryCard key={category.id} title={category.name} description={category.description} />
+            ))}
+          </div>
+        </section>
+      )}
 
-      <section className="space-y-12">
-        <SectionHeader
-          pretitle="Perfumes destacados"
-          title="Elegancia con cada nota"
-          children="Explora fragancias seleccionadas por su carácter noble, texturas complejas y acabado impecable."
-        />
-        <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
-          {featuredProducts.map((product) => (
-            <ProductCard key={product.id} product={product} />
-          ))}
-        </div>
-      </section>
+      {perfumes.length > 0 && (
+        <section className="space-y-12">
+          <SectionHeader
+            pretitle="Perfumes destacados"
+            title="Elegancia con cada nota"
+            children="Explora fragancias seleccionadas por su carácter noble, texturas complejas y acabado impecable."
+          />
+          <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+            {perfumes.map((product) => (
+              <ProductCard key={product.id} product={product} />
+            ))}
+          </div>
+        </section>
+      )}
 
       <section className="rounded-[2.5rem] border border-[#D4AF37]/10 bg-white/5 p-10 shadow-[0_40px_120px_-80px_rgba(0,0,0,0.75)] sm:p-14">
         <div className="grid gap-8 lg:grid-cols-[1.4fr_1fr] lg:items-center">
