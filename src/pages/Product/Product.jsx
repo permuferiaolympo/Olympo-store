@@ -5,7 +5,7 @@ import 'swiper/css'
 import 'swiper/css/navigation'
 import 'swiper/css/pagination'
 import { Navigation, Pagination } from 'swiper/modules'
-import { FiShoppingBag } from 'react-icons/fi'
+import { FiShoppingBag, FiCloudSnow, FiUmbrella, FiWind, FiSunrise, FiSun, FiMoon } from 'react-icons/fi'
 import SectionHeader from '../../components/common/SectionHeader.jsx'
 import { getPerfumeBySlug, getPerfumesByCategory } from '../../services/perfumeService.js'
 
@@ -105,6 +105,28 @@ function Product() {
                 </span>
               </div>
             )}
+            {product.notes?.length > 0 && (
+              <div className="space-y-3">
+                <div className="flex items-center justify-between gap-4">
+                  <div>
+                    <p className="text-sm uppercase tracking-[0.3em] text-[#D4AF37]/70">Notas olfativas</p>
+                    <p className="text-sm leading-7 text-white/70">Descubre los acordes que componen esta fragancia.</p>
+                  </div>
+                </div>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  {product.notes.map((note, index) => {
+                    const noteName = typeof note === 'string' ? note : note.name || 'Nota'
+                    const noteType = typeof note === 'string' ? '' : note.type || ''
+                    return (
+                      <div key={`${noteName}-${index}`} className="rounded-[1.75rem] border border-white/10 bg-white/5 p-4">
+                        <p className="text-xs uppercase tracking-[0.3em] text-[#D4AF37]/70">{noteType || 'Nota'}</p>
+                        <p className="mt-2 text-sm font-semibold text-white">{noteName}</p>
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            )}
             <div className="space-y-2">
               <p className="text-sm uppercase tracking-[0.3em] text-[#D4AF37]/70">Precio</p>
               <div className="flex items-center gap-4">
@@ -124,6 +146,45 @@ function Product() {
             <p className="text-sm leading-7 text-white/70">
               Perfume diseñado para quienes valoran la sofisticación en cada instante. Un equilibrio entre fuerza, elegancia y vigencia.
             </p>
+            {product.usageData && Object.keys(product.usageData).length > 0 && (
+              <div className="space-y-6 rounded-[2rem] border border-white/10 bg-black/20 p-5">
+                <div className="space-y-2">
+                  <p className="text-sm uppercase tracking-[0.3em] text-[#D4AF37]/70">Uso recomendado</p>
+                  <p className="text-sm leading-7 text-white/70">Intensidad y momentos del día con barras de progreso animadas.</p>
+                </div>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  {[
+                    { key: 'winter', label: 'Invierno', icon: FiCloudSnow, color: 'from-sky-400 to-blue-600' },
+                    { key: 'spring', label: 'Primavera', icon: FiSunrise, color: 'from-emerald-400 to-lime-500' },
+                    { key: 'summer', label: 'Verano', icon: FiUmbrella, color: 'from-orange-400 to-amber-500' },
+                    { key: 'autumn', label: 'Otoño', icon: FiWind, color: 'from-amber-500 to-orange-600' },
+                    { key: 'day', label: 'Día', icon: FiSun, color: 'from-yellow-400 to-orange-500' },
+                    { key: 'night', label: 'Noche', icon: FiMoon, color: 'from-indigo-500 to-violet-600' },
+                  ].map(({ key, label, icon: UsageIcon, color }) => {
+                    const value = Number(product.usageData[key] ?? 0)
+                    return (
+                      <div key={key} className="space-y-2 rounded-[1.75rem] border border-white/10 bg-white/5 p-4">
+                        <div className="flex items-center gap-3">
+                          <div className="grid h-11 w-11 place-items-center rounded-2xl bg-white/5 text-[#D4AF37]">
+                            <UsageIcon size={18} />
+                          </div>
+                          <div>
+                            <p className="text-xs uppercase tracking-[0.28em] text-[#D4AF37]/70">{label}</p>
+                            <p className="text-sm font-semibold text-white">{value}%</p>
+                          </div>
+                        </div>
+                        <div className="h-3 overflow-hidden rounded-full bg-white/10">
+                          <div
+                            className={`h-full rounded-full bg-gradient-to-r ${color} transition-all duration-700 ease-out`}
+                            style={{ width: `${Math.min(Math.max(value, 0), 100)}%` }}
+                          />
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+            )}
             <button
               className="inline-flex items-center justify-center gap-3 rounded-full bg-[#D4AF37] px-8 py-4 text-sm font-semibold uppercase tracking-[0.28em] text-black transition hover:scale-[1.01] disabled:opacity-50"
               disabled={product.stock <= 0}

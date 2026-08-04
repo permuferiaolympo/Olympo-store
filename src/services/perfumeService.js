@@ -116,6 +116,18 @@ function normalizePerfume(raw) {
     }
   }
 
+  const parseJsonField = (value, fallback) => {
+    if (value == null || value === '') return fallback
+    if (typeof value === 'string') {
+      try {
+        return JSON.parse(value)
+      } catch (err) {
+        return fallback
+      }
+    }
+    return value
+  }
+
   return {
     id: raw.id,
     slug: raw.slug,
@@ -134,6 +146,10 @@ function normalizePerfume(raw) {
     image: mainImage?.image_url || '',
     gallery: images.map((img) => img.image_url),
     images,
+    notes: Array.isArray(parseJsonField(raw.notes, []))
+      ? parseJsonField(raw.notes, [])
+      : [],
+    usageData: parseJsonField(raw.usage_data, {}),
     created_at: raw.created_at,
   }
 }
