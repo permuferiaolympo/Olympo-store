@@ -25,6 +25,29 @@ export async function getPerfumes() {
 }
 
 /**
+ * Obtiene TODOS los perfumes (activos e inactivos) para el panel de administración.
+ * Incluye: categoría, descuento e imagen principal.
+ */
+export async function getAllPerfumesAdmin() {
+  const { data, error } = await supabase
+    .from('perfumes')
+    .select(`
+      *,
+      category:categories(id, name, slug),
+      discount:discounts(id, name, discount_type, discount_value, active),
+      images(id, cloudflare_image_id, image_url, alt, is_main, sort_order)
+    `)
+    .order('created_at', { ascending: false })
+
+  if (error) {
+    console.error('Error fetching all perfumes (admin):', error)
+    return []
+  }
+
+  return data.map(normalizePerfume)
+}
+
+/**
  * Obtiene los perfumes destacados (featured = true).
  */
 export async function getFeaturedPerfumes() {
