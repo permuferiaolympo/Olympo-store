@@ -7,7 +7,7 @@ function Layout() {
   const location = useLocation()
 
   // Oculta el pie de página en las vistas de administración
-  const hideFooterPaths = ['/admin', '/dashboard', '/settings', '/login']
+  const hideFooterPaths = ['/admin', '/dashboard', '/login']
   const hideFooter = hideFooterPaths.some((path) =>
     location.pathname.startsWith(path)
   )

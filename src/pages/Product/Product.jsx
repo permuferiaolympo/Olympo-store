@@ -48,8 +48,8 @@ function Product() {
     return (
       <div className="flex min-h-[60vh] flex-col items-center justify-center gap-4">
         <p className="text-xl text-white/60">Perfume no encontrado</p>
-        <Link to="/catalog" className="text-sm uppercase tracking-[0.3em] text-[#D4AF37] transition hover:text-[#D4AF37]/80">
-          Volver al catálogo
+        <Link to="/" className="text-sm uppercase tracking-[0.3em] text-[#D4AF37] transition hover:text-[#D4AF37]/80">
+          Volver al inicio
         </Link>
       </div>
     )
@@ -191,8 +191,8 @@ function Product() {
             >
               <FiShoppingBag size={18} /> {product.stock > 0 ? 'Agregar al carrito' : 'Agotado'}
             </button>
-            <Link to="/catalog" className="block text-sm uppercase tracking-[0.3em] text-white/70 transition hover:text-[#D4AF37]">
-              Volver al catálogo
+            <Link to="/" className="block text-sm uppercase tracking-[0.3em] text-white/70 transition hover:text-[#D4AF37]">
+              Volver al inicio
             </Link>
           </div>
         </div>

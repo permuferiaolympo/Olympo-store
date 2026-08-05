@@ -8,7 +8,6 @@ import toast from 'react-hot-toast'
 
 const navItems = [
   { label: 'Inicio', path: '/' },
-  { label: 'Catálogo', path: '/catalog' },
   { label: 'Nosotros', path: '/about' },
   { label: 'Contacto', path: '/contact' },
 ]

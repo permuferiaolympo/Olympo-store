@@ -19,7 +19,6 @@ function Footer() {
             <p className="text-xs uppercase tracking-[0.35em] text-[#D4AF37]/70">Navegación</p>
             <div className="space-y-3 text-sm text-white/70">
               <Link to="/">Inicio</Link>
-              <Link to="/catalog">Catálogo</Link>
               <Link to="/about">Nosotros</Link>
               <Link to="/contact">Contacto</Link>
             </div>

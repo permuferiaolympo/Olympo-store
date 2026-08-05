@@ -59,16 +59,16 @@ function Home() {
           </p>
           <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
             <Link
-              to="/catalog"
+              to="/about"
               className="inline-flex rounded-full border border-[#D4AF37] bg-[#D4AF37] px-8 py-4 text-sm uppercase tracking-[0.28em] text-black transition hover:scale-[1.01] hover:bg-opacity-90"
             >
-              Explorar Catálogo
+              Conocer Más
             </Link>
             <Link
-              to="/about"
+              to="/contact"
               className="inline-flex rounded-full border border-white/20 bg-white/5 px-8 py-4 text-sm uppercase tracking-[0.28em] text-white transition hover:border-[#D4AF37]/40 hover:text-[#D4AF37]"
             >
-              Conocer Más
+              Contacto
             </Link>
           </div>
         </motion.div>
