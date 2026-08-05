@@ -272,9 +272,9 @@ function Dashbard() {
                 className="rounded-xl border border-white/[0.08] bg-white/[0.04] px-4 py-2.5 text-sm text-white/80 outline-none transition-all focus:border-[#D4AF37]/40 cursor-pointer appearance-none"
                 style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='rgba(255,255,255,0.3)'%3E%3Cpath fill-rule='evenodd' d='M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z'/%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 12px center', backgroundSize: '16px', paddingRight: '36px' }}
               >
-                <option value="all">Todas las categorías</option>
+                <option value="all" className="bg-[#18181b] text-white">Todas las categorías</option>
                 {categories.map((cat) => (
-                  <option key={cat} value={cat}>{cat}</option>
+                  <option key={cat} value={cat} className="bg-[#18181b] text-white">{cat}</option>
                 ))}
               </select>
 
@@ -286,10 +286,10 @@ function Dashbard() {
                 className="rounded-xl border border-white/[0.08] bg-white/[0.04] px-4 py-2.5 text-sm text-white/80 outline-none transition-all focus:border-[#D4AF37]/40 cursor-pointer appearance-none"
                 style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='rgba(255,255,255,0.3)'%3E%3Cpath fill-rule='evenodd' d='M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z'/%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 12px center', backgroundSize: '16px', paddingRight: '36px' }}
               >
-                <option value="all">Todo stock</option>
-                <option value="in-stock">En stock</option>
-                <option value="low-stock">Stock bajo</option>
-                <option value="out-of-stock">Agotado</option>
+                <option value="all" className="bg-[#18181b] text-white">Todo stock</option>
+                <option value="in-stock" className="bg-[#18181b] text-white">En stock</option>
+                <option value="low-stock" className="bg-[#18181b] text-white">Stock bajo</option>
+                <option value="out-of-stock" className="bg-[#18181b] text-white">Agotado</option>
               </select>
             </div>
           </div>
