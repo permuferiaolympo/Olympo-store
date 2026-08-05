@@ -1,11 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { Swiper, SwiperSlide } from 'swiper/react'
-import 'swiper/css'
-import 'swiper/css/navigation'
-import 'swiper/css/pagination'
-import { Navigation, Pagination } from 'swiper/modules'
-import { FiShoppingBag, FiCloudSnow, FiUmbrella, FiWind, FiSunrise, FiSun, FiMoon } from 'react-icons/fi'
+import { FiShoppingBag, FiCloudSnow, FiUmbrella, FiWind, FiSunrise, FiSun, FiMoon, FiStar } from 'react-icons/fi'
 import SectionHeader from '../../components/common/SectionHeader.jsx'
 import { getPerfumeBySlug, getPerfumesByCategory } from '../../services/perfumeService.js'
 
@@ -14,6 +9,7 @@ function Product() {
   const [product, setProduct] = useState(null)
   const [related, setRelated] = useState([])
   const [loading, setLoading] = useState(true)
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0)
 
   useEffect(() => {
     async function fetchProduct() {
@@ -21,6 +17,7 @@ function Product() {
       try {
         const perfume = await getPerfumeBySlug(slug)
         setProduct(perfume)
+        setSelectedImageIndex(0)
 
         // Obtener relacionados de la misma categoría
         if (perfume?.category?.id) {
@@ -59,100 +56,146 @@ function Product() {
     ? product.price - (product.price * product.discount) / 100
     : product.price
 
+  const hasGallery = product.gallery && product.gallery.length > 0
+  const currentImage = hasGallery ? product.gallery[selectedImageIndex] || product.gallery[0] : null
+
   return (
-    <div className="space-y-14">
+    <div className="space-y-12">
       <SectionHeader
         pretitle="Detalle del perfume"
         title={product.name}
         children={product.description}
       />
 
-      <div className="grid gap-10 lg:grid-cols-[1.1fr_0.9fr]">
-        <div className="rounded-[2.5rem] border border-white/10 bg-white/5 p-6 shadow-[0_40px_120px_-80px_rgba(0,0,0,0.8)]">
-          {product.gallery.length > 0 ? (
-            <Swiper modules={[Navigation, Pagination]} navigation pagination={{ clickable: true }} className="rounded-[2rem]">
-              {product.gallery.map((image, index) => (
-                <SwiperSlide key={`${product.id}-${index}`}>
-                  <img src={image} alt={`${product.name} ${index + 1}`} className="h-[420px] w-full rounded-[2rem] object-cover" />
-                </SwiperSlide>
+      <div className="grid gap-8 lg:grid-cols-12 lg:items-start">
+        {/* Columna de Galería / Imagen (5 cols) */}
+        <div className="space-y-4 lg:col-span-5 lg:sticky lg:top-24">
+          <div className="overflow-hidden rounded-[2.5rem] border border-white/10 bg-gradient-to-b from-white/10 to-black/60 p-4 sm:p-6 shadow-[0_40px_120px_-80px_rgba(0,0,0,0.8)]">
+            {hasGallery ? (
+              <div className="relative flex h-[320px] sm:h-[380px] w-full items-center justify-center">
+                <img
+                  src={currentImage}
+                  alt={`${product.name} - Imagen ${selectedImageIndex + 1}`}
+                  className="h-full w-full object-contain rounded-2xl transition-all duration-300"
+                />
+                {product.images?.[selectedImageIndex]?.is_main && (
+                  <div className="absolute left-3 top-3 flex items-center gap-1.5 rounded-full bg-[#D4AF37] px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-black shadow-md">
+                    <FiStar size={11} className="fill-black" />
+                    Principal
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="flex h-[320px] sm:h-[380px] items-center justify-center rounded-[2rem] bg-white/5">
+                <p className="text-white/40">Sin imágenes disponibles</p>
+              </div>
+            )}
+          </div>
+
+          {/* Selector de Miniaturas (Thumbnails) */}
+          {hasGallery && product.gallery.length > 1 && (
+            <div className="grid grid-cols-3 gap-3">
+              {product.gallery.map((imgUrl, idx) => (
+                <button
+                  key={`${product.id}-thumb-${idx}`}
+                  type="button"
+                  onClick={() => setSelectedImageIndex(idx)}
+                  className={`group relative h-24 overflow-hidden rounded-2xl border transition-all duration-300 ${
+                    selectedImageIndex === idx
+                      ? 'border-[#D4AF37] bg-[#D4AF37]/10 ring-2 ring-[#D4AF37]/40 scale-[1.02]'
+                      : 'border-white/10 bg-black/40 hover:border-white/30 opacity-70 hover:opacity-100'
+                  }`}
+                >
+                  <img
+                    src={imgUrl}
+                    alt={`Vista previa ${idx + 1}`}
+                    className="h-full w-full object-contain p-1.5 transition-transform duration-300 group-hover:scale-105"
+                  />
+                  {product.images?.[idx]?.is_main && (
+                    <span className="absolute right-1.5 top-1.5 rounded-full bg-[#D4AF37] p-1 text-black">
+                      <FiStar size={9} className="fill-black" />
+                    </span>
+                  )}
+                </button>
               ))}
-            </Swiper>
-          ) : (
-            <div className="flex h-[420px] items-center justify-center rounded-[2rem] bg-white/5">
-              <p className="text-white/40">Sin imágenes disponibles</p>
             </div>
           )}
         </div>
 
-        <div className="space-y-8 rounded-[2.5rem] border border-white/10 bg-white/5 p-10 shadow-[0_40px_120px_-80px_rgba(0,0,0,0.8)]">
+        {/* Columna de Información del Producto (7 cols) */}
+        <div className="space-y-8 rounded-[2.5rem] border border-white/10 bg-white/5 p-6 sm:p-10 shadow-[0_40px_120px_-80px_rgba(0,0,0,0.8)] lg:col-span-7">
           <div className="space-y-5">
             {product.brand && (
               <div className="inline-flex items-center gap-3 rounded-full border border-[#D4AF37]/20 bg-[#D4AF37]/10 px-4 py-2 text-xs uppercase tracking-[0.35em] text-[#D4AF37]/90">
                 {product.brand}
               </div>
             )}
-            {product.characteristics && (
-              <div className="space-y-2">
-                <p className="text-sm uppercase tracking-[0.3em] text-[#D4AF37]/70">Características</p>
-                <p className="text-sm leading-7 text-white/70">{product.characteristics}</p>
+
+            {/* Precio */}
+            <div className="space-y-1">
+              <p className="text-xs uppercase tracking-[0.3em] text-[#D4AF37]/70 font-semibold">Precio</p>
+              <div className="flex items-baseline gap-4">
+                <span className="text-4xl font-bold text-white">${discountedPrice.toLocaleString()}</span>
+                {product.discount > 0 && (
+                  <span className="text-base line-through text-white/40">${product.price.toLocaleString()}</span>
+                )}
               </div>
-            )}
+              {product.stock !== undefined && (
+                <p className="pt-1 text-xs uppercase tracking-[0.25em] text-white/50">
+                  {product.stock > 0 ? `${product.stock} unidades en stock` : 'Agotado'}
+                </p>
+              )}
+            </div>
+
+            {/* Categoría */}
             {product.category && (
-              <div className="space-y-2">
-                <p className="text-sm uppercase tracking-[0.3em] text-[#D4AF37]/70">Categoría</p>
-                <span className="rounded-full border border-white/10 bg-white/5 px-3 py-2 text-xs uppercase tracking-[0.3em] text-white/70">
+              <div className="space-y-1">
+                <p className="text-xs uppercase tracking-[0.3em] text-[#D4AF37]/70 font-semibold">Categoría</p>
+                <span className="inline-block rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs uppercase tracking-[0.25em] text-white/70">
                   {product.category.name}
                 </span>
               </div>
             )}
+
+            {/* Características */}
+            {product.characteristics && (
+              <div className="space-y-2 pt-2 border-t border-white/10">
+                <p className="text-xs uppercase tracking-[0.3em] text-[#D4AF37]/70 font-semibold">Notas Olfativas / Características</p>
+                <p className="text-sm leading-7 text-white/80">{product.characteristics}</p>
+              </div>
+            )}
+
+            {/* Notas olfativas en formato tarjetas */}
             {product.notes?.length > 0 && (
-              <div className="space-y-3">
-                <div className="flex items-center justify-between gap-4">
-                  <div>
-                    <p className="text-sm uppercase tracking-[0.3em] text-[#D4AF37]/70">Notas olfativas</p>
-                    <p className="text-sm leading-7 text-white/70">Descubre los acordes que componen esta fragancia.</p>
-                  </div>
+              <div className="space-y-3 pt-2 border-t border-white/10">
+                <div>
+                  <p className="text-xs uppercase tracking-[0.3em] text-[#D4AF37]/70 font-semibold">Notas olfativas</p>
+                  <p className="text-xs text-white/60">Descubre los acordes que componen esta fragancia.</p>
                 </div>
                 <div className="grid gap-3 sm:grid-cols-2">
                   {product.notes.map((note, index) => {
                     const noteName = typeof note === 'string' ? note : note.name || 'Nota'
                     const noteType = typeof note === 'string' ? '' : note.type || ''
                     return (
-                      <div key={`${noteName}-${index}`} className="rounded-[1.75rem] border border-white/10 bg-white/5 p-4">
-                        <p className="text-xs uppercase tracking-[0.3em] text-[#D4AF37]/70">{noteType || 'Nota'}</p>
-                        <p className="mt-2 text-sm font-semibold text-white">{noteName}</p>
+                      <div key={`${noteName}-${index}`} className="rounded-[1.5rem] border border-white/10 bg-white/5 p-4">
+                        <p className="text-[10px] uppercase tracking-[0.3em] text-[#D4AF37]/70">{noteType || 'Nota'}</p>
+                        <p className="mt-1 text-sm font-semibold text-white">{noteName}</p>
                       </div>
                     )
                   })}
                 </div>
               </div>
             )}
-            <div className="space-y-2">
-              <p className="text-sm uppercase tracking-[0.3em] text-[#D4AF37]/70">Precio</p>
-              <div className="flex items-center gap-4">
-                <span className="text-4xl font-semibold text-white">${discountedPrice.toFixed(0)}</span>
-                {product.discount > 0 && (
-                  <span className="text-sm line-through text-white/40">${product.price}</span>
-                )}
-              </div>
-            </div>
-            {product.stock !== undefined && (
-              <p className="text-xs uppercase tracking-[0.25em] text-white/50">
-                {product.stock > 0 ? `${product.stock} en stock` : 'Agotado'}
-              </p>
-            )}
           </div>
-          <div className="space-y-5">
-            <p className="text-sm leading-7 text-white/70">
-              Perfume diseñado para quienes valoran la sofisticación en cada instante. Un equilibrio entre fuerza, elegancia y vigencia.
-            </p>
+
+          <div className="space-y-6 pt-4 border-t border-white/10">
             {product.usageData && Object.keys(product.usageData).length > 0 && (
-              <div className="space-y-6 rounded-[2rem] border border-white/10 bg-black/20 p-5">
-                <div className="space-y-2">
-                  <p className="text-sm uppercase tracking-[0.3em] text-[#D4AF37]/70">Uso recomendado</p>
-                  <p className="text-sm leading-7 text-white/70">Intensidad y momentos del día con barras de progreso animadas.</p>
+              <div className="space-y-5 rounded-[2rem] border border-white/10 bg-black/30 p-5">
+                <div className="space-y-1">
+                  <p className="text-xs uppercase tracking-[0.3em] text-[#D4AF37]/70 font-semibold">Uso recomendado</p>
+                  <p className="text-xs text-white/60">Intensidad y momentos del día.</p>
                 </div>
-                <div className="grid gap-4 sm:grid-cols-2">
+                <div className="grid gap-3 sm:grid-cols-2">
                   {[
                     { key: 'winter', label: 'Invierno', icon: FiCloudSnow, color: 'from-sky-400 to-blue-600' },
                     { key: 'spring', label: 'Primavera', icon: FiSunrise, color: 'from-emerald-400 to-lime-500' },
@@ -163,17 +206,17 @@ function Product() {
                   ].map(({ key, label, icon: UsageIcon, color }) => {
                     const value = Number(product.usageData[key] ?? 0)
                     return (
-                      <div key={key} className="space-y-2 rounded-[1.75rem] border border-white/10 bg-white/5 p-4">
+                      <div key={key} className="space-y-2 rounded-[1.5rem] border border-white/10 bg-white/5 p-3.5">
                         <div className="flex items-center gap-3">
-                          <div className="grid h-11 w-11 place-items-center rounded-2xl bg-white/5 text-[#D4AF37]">
-                            <UsageIcon size={18} />
+                          <div className="grid h-9 w-9 place-items-center rounded-xl bg-white/5 text-[#D4AF37]">
+                            <UsageIcon size={16} />
                           </div>
                           <div>
-                            <p className="text-xs uppercase tracking-[0.28em] text-[#D4AF37]/70">{label}</p>
-                            <p className="text-sm font-semibold text-white">{value}%</p>
+                            <p className="text-[10px] uppercase tracking-[0.28em] text-[#D4AF37]/70">{label}</p>
+                            <p className="text-xs font-semibold text-white">{value}%</p>
                           </div>
                         </div>
-                        <div className="h-3 overflow-hidden rounded-full bg-white/10">
+                        <div className="h-2.5 overflow-hidden rounded-full bg-white/10">
                           <div
                             className={`h-full rounded-full bg-gradient-to-r ${color} transition-all duration-700 ease-out`}
                             style={{ width: `${Math.min(Math.max(value, 0), 100)}%` }}
@@ -185,21 +228,28 @@ function Product() {
                 </div>
               </div>
             )}
-            <button
-              className="inline-flex items-center justify-center gap-3 rounded-full bg-[#D4AF37] px-8 py-4 text-sm font-semibold uppercase tracking-[0.28em] text-black transition hover:scale-[1.01] disabled:opacity-50"
-              disabled={product.stock <= 0}
-            >
-              <FiShoppingBag size={18} /> {product.stock > 0 ? 'Agregar al carrito' : 'Agotado'}
-            </button>
-            <Link to="/" className="block text-sm uppercase tracking-[0.3em] text-white/70 transition hover:text-[#D4AF37]">
-              Volver al inicio
-            </Link>
+
+            <div className="flex flex-col sm:flex-row items-center gap-4">
+              <button
+                type="button"
+                className="w-full sm:w-auto flex-1 inline-flex items-center justify-center gap-3 rounded-full bg-gradient-to-r from-[#D4AF37] to-[#AA7C11] px-8 py-4 text-xs font-semibold uppercase tracking-[0.28em] text-black shadow-[0_0_30px_rgba(212,175,55,0.2)] transition hover:brightness-110 active:scale-[0.99] disabled:opacity-50"
+                disabled={product.stock <= 0}
+              >
+                <FiShoppingBag size={18} /> {product.stock > 0 ? 'Agregar al carrito' : 'Agotado'}
+              </button>
+              <Link
+                to="/"
+                className="text-xs uppercase tracking-[0.25em] text-white/60 transition hover:text-[#D4AF37]"
+              >
+                Volver al inicio
+              </Link>
+            </div>
           </div>
         </div>
       </div>
 
       {related.length > 0 && (
-        <section className="space-y-8">
+        <section className="space-y-8 pt-8">
           <SectionHeader
             pretitle="También te puede interesar"
             title="Perfumes relacionados"
@@ -210,10 +260,10 @@ function Product() {
               <Link key={item.id} to={`/product/${item.slug}`} className="group">
                 <div className="rounded-[2rem] border border-white/10 bg-white/5 p-6 text-white transition group-hover:border-[#D4AF37]/20">
                   {item.image && (
-                    <img src={item.image} alt={item.name} className="mb-5 h-64 w-full rounded-[1.75rem] object-cover" />
+                    <img src={item.image} alt={item.name} className="mb-5 h-56 w-full rounded-[1.75rem] object-contain bg-black/30 p-2" />
                   )}
-                  <h3 className="mb-3 text-2xl font-[TrajanPro] uppercase tracking-[0.14em] text-white">{item.name}</h3>
-                  <p className="text-sm leading-7 text-white/70">{item.description}</p>
+                  <h3 className="mb-3 text-xl font-[TrajanPro] uppercase tracking-[0.14em] text-white">{item.name}</h3>
+                  <p className="text-xs leading-6 text-white/70 line-clamp-2">{item.description}</p>
                 </div>
               </Link>
             ))}
