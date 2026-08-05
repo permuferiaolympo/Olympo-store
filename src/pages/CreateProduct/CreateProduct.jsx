@@ -1,13 +1,151 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import toast from 'react-hot-toast'
-import { FiArrowLeft, FiPlusCircle, FiPackage, FiDollarSign, FiTag, FiFileText, FiCheck, FiImage } from 'react-icons/fi'
+import { FiArrowLeft, FiPackage, FiDollarSign, FiCheck, FiImage, FiUploadCloud, FiTrash2, FiStar } from 'react-icons/fi'
 import SectionHeader from '../../components/common/SectionHeader.jsx'
-import ImageUploader from '../../components/common/ImageUploader.jsx'
-import ProductImageGallery from '../../components/common/ProductImageGallery.jsx'
+import { uploadProductImage } from '../../services/uploadService.js'
 import { getCategories } from '../../services/categoryService.js'
 import { createProduct, saveProductImage } from '../../services/productService.js'
 
+// ─── Componente de Slot de Imagen Individual ────────────────────────────────────
+function ImageSlot({ label, sublabel, image, onUpload, onRemove, isMain, large }) {
+  const [dragActive, setDragActive] = useState(false)
+  const [uploading, setUploading] = useState(false)
+
+  const handleDrag = (e) => {
+    e.preventDefault()
+    e.stopPropagation()
+    if (e.type === 'dragenter' || e.type === 'dragover') setDragActive(true)
+    else if (e.type === 'dragleave') setDragActive(false)
+  }
+
+  const handleDrop = async (e) => {
+    e.preventDefault()
+    e.stopPropagation()
+    setDragActive(false)
+    if (e.dataTransfer.files?.[0]) await processFile(e.dataTransfer.files[0])
+  }
+
+  const handleChange = async (e) => {
+    e.preventDefault()
+    if (e.target.files?.[0]) await processFile(e.target.files[0])
+  }
+
+  const processFile = async (file) => {
+    if (!file.type.startsWith('image/')) {
+      toast.error('Selecciona una imagen válida (jpg, png, webp)')
+      return
+    }
+    setUploading(true)
+    const loadingToast = toast.loading('Subiendo imagen a Cloudflare R2...')
+    try {
+      const url = await uploadProductImage(file)
+      toast.success('¡Imagen subida con éxito!', { id: loadingToast })
+      onUpload(url)
+    } catch (error) {
+      toast.error(`Error: ${error.message}`, { id: loadingToast })
+    } finally {
+      setUploading(false)
+    }
+  }
+
+  return (
+    <div className="flex flex-col gap-2">
+      {/* Label */}
+      <div className="flex items-center gap-2">
+        {isMain && <FiStar size={14} className="text-[#D4AF37] fill-[#D4AF37]" />}
+        <span className="text-xs uppercase tracking-[0.25em] text-[#D4AF37] font-medium">{label}</span>
+        {sublabel && <span className="text-[10px] text-white/40">{sublabel}</span>}
+      </div>
+
+      {/* Slot */}
+      {image ? (
+        /* ── Preview con imagen subida ── */
+        <div
+          className={`group relative overflow-hidden rounded-2xl border transition-all duration-300 ${
+            isMain
+              ? 'border-[#D4AF37]/60 shadow-[0_0_30px_rgba(212,175,55,0.15)]'
+              : 'border-white/15 hover:border-white/25'
+          }`}
+          style={{ height: large ? '280px' : '180px' }}
+        >
+          <img
+            src={image}
+            alt={label}
+            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+          />
+
+          {/* Overlay con acciones */}
+          <div className="absolute inset-0 flex items-center justify-center bg-black/0 opacity-0 transition-all duration-300 group-hover:bg-black/50 group-hover:opacity-100">
+            <button
+              type="button"
+              onClick={onRemove}
+              className="flex items-center gap-2 rounded-full bg-red-500/90 px-4 py-2.5 text-xs font-semibold uppercase tracking-wider text-white shadow-lg transition-all hover:bg-red-500 hover:scale-105 active:scale-95"
+            >
+              <FiTrash2 size={14} />
+              Eliminar
+            </button>
+          </div>
+
+          {/* Badge principal */}
+          {isMain && (
+            <div className="absolute left-3 top-3 z-10 flex items-center gap-1.5 rounded-full bg-[#D4AF37] px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-black shadow-md">
+              <FiStar size={11} className="fill-black" />
+              Principal
+            </div>
+          )}
+        </div>
+      ) : (
+        /* ── Zona de upload vacía ── */
+        <div
+          className={`relative flex flex-col items-center justify-center rounded-2xl border-2 border-dashed transition-all duration-300 cursor-pointer ${
+            dragActive
+              ? 'border-[#D4AF37] bg-[#D4AF37]/10'
+              : isMain
+                ? 'border-[#D4AF37]/30 bg-[#D4AF37]/5 hover:border-[#D4AF37]/60 hover:bg-[#D4AF37]/10'
+                : 'border-white/15 bg-white/5 hover:border-white/30 hover:bg-white/10'
+          }`}
+          style={{ height: large ? '280px' : '180px' }}
+          onDragEnter={handleDrag}
+          onDragLeave={handleDrag}
+          onDragOver={handleDrag}
+          onDrop={handleDrop}
+        >
+          <input
+            type="file"
+            accept="image/*"
+            onChange={handleChange}
+            disabled={uploading}
+            className="absolute inset-0 h-full w-full cursor-pointer opacity-0 disabled:cursor-not-allowed"
+          />
+
+          {uploading ? (
+            <div className="flex flex-col items-center gap-3">
+              <div className="h-10 w-10 animate-spin rounded-full border-3 border-white/10 border-t-[#D4AF37]" />
+              <p className="text-[11px] font-medium uppercase tracking-widest text-[#D4AF37]">Subiendo...</p>
+            </div>
+          ) : (
+            <div className="flex flex-col items-center gap-2 text-center px-4">
+              <div className={`flex items-center justify-center rounded-full ${
+                isMain ? 'h-14 w-14 bg-[#D4AF37]/15 text-[#D4AF37]' : 'h-11 w-11 bg-white/10 text-white/50'
+              }`}>
+                <FiUploadCloud size={large ? 26 : 22} />
+              </div>
+              <p className={`text-xs font-medium uppercase tracking-widest ${isMain ? 'text-[#D4AF37]' : 'text-white/70'}`}>
+                {large ? 'Sube la foto principal' : 'Sube una foto'}
+              </p>
+              <p className="text-[10px] text-white/40 leading-tight">
+                Arrastra o haz clic
+              </p>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
+
+// ─── Componente Principal ────────────────────────────────────────────────────────
 export default function CreateProduct() {
   const navigate = useNavigate()
 
@@ -28,8 +166,10 @@ export default function CreateProduct() {
   const [categories, setCategories] = useState([])
   const [loadingCategories, setLoadingCategories] = useState(true)
 
-  // Imágenes subidas
-  const [images, setImages] = useState([]) // Array de { url, is_main }
+  // Imágenes: 3 slots (principal + 2 adicionales)
+  const [mainImage, setMainImage] = useState(null)    // string URL o null
+  const [extraImage1, setExtraImage1] = useState(null) // string URL o null
+  const [extraImage2, setExtraImage2] = useState(null) // string URL o null
 
   // Estado de guardado
   const [saving, setSaving] = useState(false)
@@ -63,46 +203,8 @@ export default function CreateProduct() {
     }))
   }
 
-  // Callback al subir una imagen a R2
-  const handleUploadComplete = (url) => {
-    setImages((prev) => {
-      const isFirst = prev.length === 0
-      return [...prev, { url, is_main: isFirst }]
-    })
-    toast.success('Imagen agregada a la galería')
-  }
-
-  // Cambiar imagen principal
-  const handleSetMain = (index) => {
-    setImages((prev) =>
-      prev.map((img, i) => ({
-        ...img,
-        is_main: i === index,
-      }))
-    )
-  }
-
-  // Eliminar imagen
-  const handleDeleteImage = (index) => {
-    setImages((prev) => {
-      const next = prev.filter((_, i) => i !== index)
-      // Si eliminamos la principal, hacer la primera como principal si queda alguna
-      if (next.length > 0 && !next.some((img) => img.is_main)) {
-        next[0].is_main = true
-      }
-      return next
-    })
-  }
-
-  // Reordenar imágenes
-  const handleMoveImage = (fromIndex, toIndex) => {
-    setImages((prev) => {
-      const updated = [...prev]
-      const [moved] = updated.splice(fromIndex, 1)
-      updated.splice(toIndex, 0, moved)
-      return updated
-    })
-  }
+  // Contar cuántas imágenes hay
+  const imageCount = [mainImage, extraImage1, extraImage2].filter(Boolean).length
 
   // Enviar formulario
   const handleSubmit = async (e) => {
@@ -125,18 +227,21 @@ export default function CreateProduct() {
       // 1. Crear registro del perfume en la tabla 'perfumes'
       const perfume = await createProduct(formData)
 
-      // 2. Guardar las imágenes asociadas si hay alguna subida
-      if (images && images.length > 0) {
-        for (let i = 0; i < images.length; i++) {
-          const img = images[i]
-          await saveProductImage({
-            perfume_id: perfume.id,
-            image_url: img.url,
-            is_main: img.is_main,
-            sort_order: i,
-            alt: `${perfume.name} - Imagen ${i + 1}`,
-          })
-        }
+      // 2. Guardar las imágenes asociadas
+      const imagesToSave = [
+        mainImage && { url: mainImage, is_main: true, sort_order: 0, label: 'Principal' },
+        extraImage1 && { url: extraImage1, is_main: false, sort_order: 1, label: 'Adicional 1' },
+        extraImage2 && { url: extraImage2, is_main: false, sort_order: 2, label: 'Adicional 2' },
+      ].filter(Boolean)
+
+      for (const img of imagesToSave) {
+        await saveProductImage({
+          perfume_id: perfume.id,
+          image_url: img.url,
+          is_main: img.is_main,
+          sort_order: img.sort_order,
+          alt: `${perfume.name} - ${img.label}`,
+        })
       }
 
       toast.success('¡Producto creado exitosamente!', { id: saveToast })
@@ -335,24 +440,54 @@ export default function CreateProduct() {
             </div>
           </div>
 
-          {/* Columna Derecha: Subida e Galería de Imágenes */}
+          {/* Columna Derecha: Galería de 3 Imágenes */}
           <div className="space-y-6 lg:col-span-5">
             <div className="rounded-[2.5rem] border border-[#D4AF37]/30 bg-black/70 p-6 sm:p-8 backdrop-blur-xl shadow-[0_40px_120px_-60px_rgba(212,175,55,0.2)] space-y-6">
-              <h3 className="flex items-center gap-2 text-lg font-[TrajanPro] uppercase tracking-[0.14em] text-white border-b border-white/10 pb-4">
-                <FiImage className="text-[#D4AF37]" />
-                Galería de Imágenes (Opcional)
-              </h3>
+              <div className="flex items-center justify-between border-b border-white/10 pb-4">
+                <h3 className="flex items-center gap-2 text-lg font-[TrajanPro] uppercase tracking-[0.14em] text-white">
+                  <FiImage className="text-[#D4AF37]" />
+                  Fotos del Producto
+                </h3>
+                <span className="text-xs text-white/40 tabular-nums">{imageCount}/3</span>
+              </div>
 
-              {/* Uploader */}
-              <ImageUploader onUploadComplete={handleUploadComplete} autoReset={true} />
-
-              {/* Lista/Galería de imágenes agregadas */}
-              <ProductImageGallery
-                images={images}
-                onSetMain={handleSetMain}
-                onDelete={handleDeleteImage}
-                onMove={handleMoveImage}
+              {/* Slot 1 — Imagen Principal (grande) */}
+              <ImageSlot
+                label="Imagen Principal"
+                sublabel="Requerida"
+                image={mainImage}
+                onUpload={(url) => setMainImage(url)}
+                onRemove={() => setMainImage(null)}
+                isMain={true}
+                large={true}
               />
+
+              {/* Slots 2 y 3 — Imágenes Adicionales (lado a lado) */}
+              <div className="grid grid-cols-2 gap-4">
+                <ImageSlot
+                  label="Adicional 1"
+                  sublabel="Opcional"
+                  image={extraImage1}
+                  onUpload={(url) => setExtraImage1(url)}
+                  onRemove={() => setExtraImage1(null)}
+                  isMain={false}
+                  large={false}
+                />
+                <ImageSlot
+                  label="Adicional 2"
+                  sublabel="Opcional"
+                  image={extraImage2}
+                  onUpload={(url) => setExtraImage2(url)}
+                  onRemove={() => setExtraImage2(null)}
+                  isMain={false}
+                  large={false}
+                />
+              </div>
+
+              {/* Tip */}
+              <p className="text-[11px] leading-relaxed text-white/30 text-center">
+                La imagen principal se mostrará como portada del producto. Las adicionales se verán en la galería de detalle.
+              </p>
             </div>
           </div>
         </div>
