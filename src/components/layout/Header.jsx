@@ -81,15 +81,7 @@ function Header() {
             <FiShoppingBag size={18} />
           </Link>
 
-          {!isAuthenticated ? (
-            <button
-              type="button"
-              onClick={openLoginModal}
-              className="rounded-full border border-[#D4AF37]/40 bg-[#D4AF37]/10 px-4 py-2 text-xs uppercase tracking-[0.2em] text-[#D4AF37] transition hover:bg-[#D4AF37]/20"
-            >
-              Admin
-            </button>
-          ) : (
+          {isAuthenticated && (
             <div className="flex items-center gap-2">
               <Link
                 to="/dashboard"
@@ -148,18 +140,7 @@ function Header() {
                   Carrito
                 </Link>
 
-                {!isAuthenticated ? (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setOpen(false)
-                      openLoginModal()
-                    }}
-                    className="flex items-center justify-center rounded-3xl border border-[#D4AF37]/40 bg-[#D4AF37]/10 px-4 py-3 text-sm uppercase tracking-[0.22em] text-[#D4AF37]"
-                  >
-                    Admin
-                  </button>
-                ) : (
+                {isAuthenticated && (
                   <>
                     <Link
                       to="/dashboard"
@@ -191,4 +172,3 @@ function Header() {
 }
 
 export default Header
-
