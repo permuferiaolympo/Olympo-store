@@ -6,6 +6,8 @@ import {
   FiSearch,
   FiChevronDown,
   FiChevronUp,
+  FiChevronLeft,
+  FiChevronRight,
   FiAlertTriangle,
   FiLoader,
   FiEdit2,
@@ -15,6 +17,8 @@ import {
 } from 'react-icons/fi'
 import SectionHeader from '../../components/common/SectionHeader.jsx'
 import { getAllPerfumesAdmin } from '../../services/perfumeService.js'
+
+const ITEMS_PER_PAGE = 10
 
 function Dashbard() {
   const [products, setProducts] = useState([])
@@ -27,6 +31,9 @@ function Dashbard() {
   const [stockFilter, setStockFilter] = useState('all')
   const [sortField, setSortField] = useState('created_at')
   const [sortAsc, setSortAsc] = useState(false)
+
+  // Paginación
+  const [currentPage, setCurrentPage] = useState(1)
 
   useEffect(() => {
     async function fetchProducts() {
@@ -119,6 +126,18 @@ function Dashbard() {
 
     return filtered
   }, [products, searchTerm, categoryFilter, stockFilter, sortField, sortAsc])
+
+  // Resetear página al cambiar filtros
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [searchTerm, categoryFilter, stockFilter, sortField, sortAsc])
+
+  // Paginación
+  const totalPages = Math.max(1, Math.ceil(filteredProducts.length / ITEMS_PER_PAGE))
+  const paginatedProducts = useMemo(() => {
+    const start = (currentPage - 1) * ITEMS_PER_PAGE
+    return filteredProducts.slice(start, start + ITEMS_PER_PAGE)
+  }, [filteredProducts, currentPage])
 
   function handleSort(field) {
     if (sortField === field) {
@@ -312,6 +331,7 @@ function Dashbard() {
 
         {/* Tabla */}
         {!loading && !error && filteredProducts.length > 0 && (
+          <>
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm">
               <thead>
@@ -343,7 +363,7 @@ function Dashbard() {
                 </tr>
               </thead>
               <tbody>
-                {filteredProducts.map((product, idx) => (
+                {paginatedProducts.map((product, idx) => (
                   <tr
                     key={product.id}
                     className={`group border-b border-white/[0.03] transition-colors duration-200 hover:bg-white/[0.03] ${
@@ -455,6 +475,75 @@ function Dashbard() {
               </tbody>
             </table>
           </div>
+
+          {/* Paginación */}
+          {totalPages > 1 && (
+            <div className="flex flex-col items-center gap-4 border-t border-white/[0.06] px-6 py-4 sm:flex-row sm:justify-between">
+              <p className="text-xs text-white/40">
+                Mostrando {((currentPage - 1) * ITEMS_PER_PAGE) + 1}–{Math.min(currentPage * ITEMS_PER_PAGE, filteredProducts.length)} de {filteredProducts.length} productos
+              </p>
+              <div className="flex items-center gap-1">
+                <button
+                  type="button"
+                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                  disabled={currentPage === 1}
+                  className="flex h-9 w-9 items-center justify-center rounded-xl border border-white/[0.06] bg-white/[0.04] text-white/50 transition-all duration-200 hover:border-[#D4AF37]/30 hover:bg-[#D4AF37]/10 hover:text-[#D4AF37] disabled:pointer-events-none disabled:opacity-30"
+                  aria-label="Página anterior"
+                >
+                  <FiChevronLeft size={16} />
+                </button>
+
+                {Array.from({ length: totalPages }, (_, i) => i + 1)
+                  .filter((page) => {
+                    if (totalPages <= 7) return true
+                    if (page === 1 || page === totalPages) return true
+                    if (Math.abs(page - currentPage) <= 1) return true
+                    return false
+                  })
+                  .reduce((acc, page, i, arr) => {
+                    if (i > 0 && page - arr[i - 1] > 1) {
+                      acc.push('ellipsis-' + page)
+                    }
+                    acc.push(page)
+                    return acc
+                  }, [])
+                  .map((item) => {
+                    if (typeof item === 'string') {
+                      return (
+                        <span key={item} className="px-1 text-xs text-white/20">
+                          ···
+                        </span>
+                      )
+                    }
+                    return (
+                      <button
+                        key={item}
+                        type="button"
+                        onClick={() => setCurrentPage(item)}
+                        className={`flex h-9 min-w-[36px] items-center justify-center rounded-xl text-xs font-medium transition-all duration-200 ${
+                          currentPage === item
+                            ? 'border border-[#D4AF37]/40 bg-[#D4AF37]/15 text-[#D4AF37] shadow-[0_0_12px_rgba(212,175,55,0.1)]'
+                            : 'border border-white/[0.06] bg-white/[0.04] text-white/50 hover:border-[#D4AF37]/30 hover:bg-[#D4AF37]/10 hover:text-[#D4AF37]'
+                        }`}
+                      >
+                        {item}
+                      </button>
+                    )
+                  })}
+
+                <button
+                  type="button"
+                  onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                  disabled={currentPage === totalPages}
+                  className="flex h-9 w-9 items-center justify-center rounded-xl border border-white/[0.06] bg-white/[0.04] text-white/50 transition-all duration-200 hover:border-[#D4AF37]/30 hover:bg-[#D4AF37]/10 hover:text-[#D4AF37] disabled:pointer-events-none disabled:opacity-30"
+                  aria-label="Página siguiente"
+                >
+                  <FiChevronRight size={16} />
+                </button>
+              </div>
+            </div>
+          )}
+          </>
         )}
       </div>
     </div>
