@@ -34,6 +34,7 @@ export async function createProduct(productData) {
     category_id,
     featured = false,
     new_arrival = false,
+    usage_data = null,
   } = productData
 
   const baseSlug = generateSlug(name)
@@ -49,6 +50,7 @@ export async function createProduct(productData) {
     category_id: category_id || null,
     featured,
     new_arrival,
+    usage_data: usage_data && Object.keys(usage_data).length > 0 ? usage_data : null,
     is_active: true,
   }
 

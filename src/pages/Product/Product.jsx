@@ -59,6 +59,19 @@ function Product() {
   const hasGallery = product.gallery && product.gallery.length > 0
   const currentImage = hasGallery ? product.gallery[selectedImageIndex] || product.gallery[0] : null
 
+  // Normalize usage data here in case it's stored as a JSON string in the DB
+  const usage = (() => {
+    if (!product?.usageData) return {}
+    if (typeof product.usageData === 'string') {
+      try {
+        return JSON.parse(product.usageData)
+      } catch (err) {
+        return {}
+      }
+    }
+    return product.usageData || {}
+  })()
+
   return (
     <div className="space-y-12">
       <SectionHeader
@@ -164,38 +177,17 @@ function Product() {
                 <p className="text-sm leading-7 text-white/80">{product.characteristics}</p>
               </div>
             )}
-
-            {/* Notas olfativas en formato tarjetas */}
-            {product.notes?.length > 0 && (
-              <div className="space-y-3 pt-2 border-t border-white/10">
-                <div>
-                  <p className="text-xs uppercase tracking-[0.3em] text-[#D4AF37]/70 font-semibold">Notas olfativas</p>
-                  <p className="text-xs text-white/60">Descubre los acordes que componen esta fragancia.</p>
-                </div>
-                <div className="grid gap-3 sm:grid-cols-2">
-                  {product.notes.map((note, index) => {
-                    const noteName = typeof note === 'string' ? note : note.name || 'Nota'
-                    const noteType = typeof note === 'string' ? '' : note.type || ''
-                    return (
-                      <div key={`${noteName}-${index}`} className="rounded-[1.5rem] border border-white/10 bg-white/5 p-4">
-                        <p className="text-[10px] uppercase tracking-[0.3em] text-[#D4AF37]/70">{noteType || 'Nota'}</p>
-                        <p className="mt-1 text-sm font-semibold text-white">{noteName}</p>
-                      </div>
-                    )
-                  })}
-                </div>
-              </div>
-            )}
           </div>
 
           <div className="space-y-6 pt-4 border-t border-white/10">
-            {product.usageData && Object.keys(product.usageData).length > 0 && (
+            {Object.keys(usage).length > 0 && (
               <div className="space-y-5 rounded-[2rem] border border-white/10 bg-black/30 p-5">
                 <div className="space-y-1">
                   <p className="text-xs uppercase tracking-[0.3em] text-[#D4AF37]/70 font-semibold">Uso recomendado</p>
                   <p className="text-xs text-white/60">Intensidad y momentos del día.</p>
                 </div>
-                <div className="grid gap-3 sm:grid-cols-2">
+
+                <div className="mt-3 grid grid-cols-3 gap-3 sm:grid-cols-6">
                   {[
                     { key: 'winter', label: 'Invierno', icon: FiCloudSnow, color: 'from-sky-400 to-blue-600' },
                     { key: 'spring', label: 'Primavera', icon: FiSunrise, color: 'from-emerald-400 to-lime-500' },
@@ -204,23 +196,22 @@ function Product() {
                     { key: 'day', label: 'Día', icon: FiSun, color: 'from-yellow-400 to-orange-500' },
                     { key: 'night', label: 'Noche', icon: FiMoon, color: 'from-indigo-500 to-violet-600' },
                   ].map(({ key, label, icon: UsageIcon, color }) => {
-                    const value = Number(product.usageData[key] ?? 0)
+                    const value = Number(usage[key] ?? 0)
+                    if (!value) return null
+
                     return (
-                      <div key={key} className="space-y-2 rounded-[1.5rem] border border-white/10 bg-white/5 p-3.5">
-                        <div className="flex items-center gap-3">
-                          <div className="grid h-9 w-9 place-items-center rounded-xl bg-white/5 text-[#D4AF37]">
-                            <UsageIcon size={16} />
+                      <div key={key} className="flex flex-col items-center gap-2 rounded-[1rem] bg-white/5 py-3 px-2 text-center">
+                        <div className="grid h-12 w-12 place-items-center rounded-xl bg-white/5 text-[#D4AF37]"><UsageIcon size={20} /></div>
+                        <p className="mt-1 text-xs uppercase tracking-[0.25em] text-[#D4AF37]/80">{label}</p>
+
+                        <div className="mt-2 w-full">
+                          <div className="h-2.5 w-full overflow-hidden rounded-full bg-white/10">
+                            <div
+                              className={`h-full rounded-full bg-gradient-to-r ${color} transition-all duration-700 ease-out`}
+                              style={{ width: `${Math.min(Math.max(value, 0), 100)}%` }}
+                            />
                           </div>
-                          <div>
-                            <p className="text-[10px] uppercase tracking-[0.28em] text-[#D4AF37]/70">{label}</p>
-                            <p className="text-xs font-semibold text-white">{value}%</p>
-                          </div>
-                        </div>
-                        <div className="h-2.5 overflow-hidden rounded-full bg-white/10">
-                          <div
-                            className={`h-full rounded-full bg-gradient-to-r ${color} transition-all duration-700 ease-out`}
-                            style={{ width: `${Math.min(Math.max(value, 0), 100)}%` }}
-                          />
+                          <p className="mt-2 text-sm font-semibold text-white">{value}%</p>
                         </div>
                       </div>
                     )

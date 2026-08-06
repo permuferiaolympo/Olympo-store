@@ -59,10 +59,10 @@ function Home() {
           </p>
           <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
             <Link
-              to="/about"
+              to="/catalog"
               className="inline-flex rounded-full border border-[#D4AF37] bg-[#D4AF37] px-8 py-4 text-sm uppercase tracking-[0.28em] text-black transition hover:scale-[1.01] hover:bg-opacity-90"
             >
-              Conocer Más
+              Ver Catálogo
             </Link>
             <Link
               to="/contact"

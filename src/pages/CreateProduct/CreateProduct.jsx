@@ -158,6 +158,12 @@ export default function CreateProduct() {
     category_id: '',
     description: '',
     characteristics: '',
+    usage_day: '',
+    usage_night: '',
+    usage_autumn: '',
+    usage_spring: '',
+    usage_summer: '',
+    usage_winter: '',
     featured: false,
     new_arrival: false,
   })
@@ -224,8 +230,46 @@ export default function CreateProduct() {
     const saveToast = toast.loading('Guardando producto en Supabase...')
 
     try {
-      // 1. Crear registro del perfume en la tabla 'perfumes'
-      const perfume = await createProduct(formData)
+      const {
+        usage_day,
+        usage_night,
+        usage_autumn,
+        usage_spring,
+        usage_summer,
+        usage_winter,
+        ...payloadBase
+      } = formData
+
+      const usageData = {}
+      if (usage_day !== '') {
+        const value = Number(usage_day)
+        if (!Number.isNaN(value) && value >= 0) usageData.day = value
+      }
+      if (usage_night !== '') {
+        const value = Number(usage_night)
+        if (!Number.isNaN(value) && value >= 0) usageData.night = value
+      }
+      if (usage_autumn !== '') {
+        const value = Number(usage_autumn)
+        if (!Number.isNaN(value) && value >= 0) usageData.autumn = value
+      }
+      if (usage_spring !== '') {
+        const value = Number(usage_spring)
+        if (!Number.isNaN(value) && value >= 0) usageData.spring = value
+      }
+      if (usage_summer !== '') {
+        const value = Number(usage_summer)
+        if (!Number.isNaN(value) && value >= 0) usageData.summer = value
+      }
+      if (usage_winter !== '') {
+        const value = Number(usage_winter)
+        if (!Number.isNaN(value) && value >= 0) usageData.winter = value
+      }
+
+      const perfume = await createProduct({
+        ...payloadBase,
+        usage_data: Object.keys(usageData).length > 0 ? usageData : null,
+      })
 
       // 2. Guardar las imágenes asociadas
       const imagesToSave = [
@@ -411,6 +455,42 @@ export default function CreateProduct() {
                   onChange={handleChange}
                   className="w-full rounded-2xl border border-white/10 bg-white/5 px-5 py-4 text-white outline-none transition focus:border-[#D4AF37]/60 focus:ring-2 focus:ring-[#D4AF37]/20"
                 />
+              </div>
+
+              {/* Uso recomendado */}
+              <div className="rounded-[2rem] border border-white/10 bg-white/5 p-5">
+                <h4 className="mb-4 text-sm font-semibold uppercase tracking-[0.25em] text-[#D4AF37]">
+                  Usos recomendados
+                </h4>
+                <p className="mb-4 text-xs text-white/60">
+                  Completa solo los porcentajes que correspondan. Los íconos solo aparecerán en el detalle si hay valores.
+                </p>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  {[
+                    { key: 'usage_winter', label: 'Invierno' },
+                    { key: 'usage_spring', label: 'Primavera' },
+                    { key: 'usage_summer', label: 'Verano' },
+                    { key: 'usage_autumn', label: 'Otoño' },
+                    { key: 'usage_day', label: 'Día' },
+                    { key: 'usage_night', label: 'Noche' },
+                  ].map(({ key, label }) => (
+                    <div key={key}>
+                      <label className="mb-2 block text-[10px] uppercase tracking-[0.3em] text-[#D4AF37]">
+                        {label}
+                      </label>
+                      <input
+                        type="number"
+                        name={key}
+                        min="0"
+                        max="100"
+                        placeholder="0"
+                        value={formData[key]}
+                        onChange={handleChange}
+                        className="w-full rounded-2xl border border-white/10 bg-black/70 px-4 py-3 text-white outline-none transition focus:border-[#D4AF37]/60 focus:ring-2 focus:ring-[#D4AF37]/20"
+                      />
+                    </div>
+                  ))}
+                </div>
               </div>
 
               {/* Opciones adicionales: Destacado / Nuevo */}

@@ -5,10 +5,11 @@ import { FiSearch, FiShoppingBag, FiMenu, FiX, FiShield, FiLogOut, FiUser } from
 import { useAuth } from '../../context/AuthContext.jsx'
 import { signOut } from '../../services/authService.js'
 import toast from 'react-hot-toast'
+import logoImage from '../../assets/logo/logo.jpeg'
 
 const navItems = [
   { label: 'Inicio', path: '/' },
-  { label: 'Nosotros', path: '/about' },
+  { label: 'Catálogo', path: '/catalog' },
   { label: 'Contacto', path: '/contact' },
 ]
 
@@ -39,11 +40,13 @@ function Header() {
     >
       <div className="mx-auto flex max-w-[1440px] items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-8">
         <Link to="/" className="flex items-center gap-3 text-white">
-          <div className="flex h-12 w-12 items-center justify-center rounded-full border border-[#D4AF37]/40 bg-white/5 text-[#D4AF37] shadow-[0_0_24px_rgba(212,175,55,0.18)]">
-            <span className="text-lg font-[Montserrat] uppercase tracking-[0.35em] text-[#D4AF37]">O</span>
-          </div>
+          <img
+            src={logoImage}
+            alt="Olympo Perfumería"
+            className="h-12 w-12 rounded-full border border-[#D4AF37]/40 object-cover shadow-[0_0_24px_rgba(212,175,55,0.18)]"
+          />
           <div>
-            <p className="text-xs uppercase tracking-[0.3em] text-[#D4AF37]/80">OLIMPO</p>
+            <p className="text-xs uppercase tracking-[0.3em] text-[#D4AF37]/80">OLYMPO</p>
             <p className="text-sm font-[Montserrat] uppercase tracking-[0.2em] text-white/90">Perfumería</p>
           </div>
         </Link>

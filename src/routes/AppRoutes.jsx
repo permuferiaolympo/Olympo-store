@@ -5,6 +5,7 @@ import Product from '../pages/Product/Product.jsx'
 import About from '../pages/About/About.jsx'
 import Contact from '../pages/Contact/Contact.jsx'
 import Cart from '../pages/Cart/Cart.jsx'
+import Catalog from '../pages/Catalog/Catalog.jsx'
 import Dashbard from '../pages/Dashbard/Dashbard.jsx'
 import CreateProduct from '../pages/CreateProduct/CreateProduct.jsx'
 import Admin from '../pages/Admin/Admin.jsx'
@@ -18,6 +19,7 @@ function AppRoutes() {
         <Route index element={<Home />} />
         <Route path="product/:slug" element={<Product />} />
         <Route path="about" element={<About />} />
+        <Route path="catalog" element={<Catalog />} />
         <Route path="contact" element={<Contact />} />
         <Route path="cart" element={<Cart />} />
 
