@@ -141,6 +141,73 @@ export async function getPerfumesByCategory(categoryId) {
 }
 
 /**
+ * Elimina un perfume por su ID.
+ * 1. Obtiene las imágenes asociadas de la BD
+ * 2. Elimina cada imagen de Cloudflare R2
+ * 3. Elimina los registros de imágenes de la BD
+ * 4. Elimina el perfume de la BD
+ */
+export async function deletePerfume(id) {
+  // Importar la función de eliminación de R2
+  const { deleteProductImage } = await import('./uploadService.js')
+
+  // 1. Obtener las imágenes asociadas antes de eliminar
+  const { data: images, error: fetchImgError } = await supabase
+    .from('images')
+    .select('id, image_url')
+    .eq('perfume_id', id)
+
+  if (fetchImgError) {
+    console.error('Error fetching perfume images:', fetchImgError)
+    // Continuar de todos modos
+  }
+
+  // 2. Eliminar cada imagen de Cloudflare R2
+  if (images && images.length > 0) {
+    const deletePromises = images.map((img) =>
+      deleteProductImage(img.image_url).catch((err) => {
+        console.warn(`No se pudo eliminar de R2: ${img.image_url}`, err)
+        return false
+      })
+    )
+    await Promise.all(deletePromises)
+  }
+
+  // 3. Eliminar registros de imágenes de la BD
+  const { error: imgError } = await supabase
+    .from('images')
+    .delete()
+    .eq('perfume_id', id)
+
+  if (imgError) {
+    console.error('Error deleting perfume images from DB:', imgError)
+    throw new Error('Error al eliminar las imágenes del producto de la base de datos.')
+  }
+
+  // 4. Eliminar el perfume de la BD
+  const { data, error } = await supabase
+    .from('perfumes')
+    .delete()
+    .eq('id', id)
+    .select()
+
+  if (error) {
+    console.error('Error deleting perfume:', error)
+    throw new Error(`Error al eliminar el producto: ${error.message}`)
+  }
+
+  // Si RLS bloqueó la eliminación, data estará vacío
+  if (!data || data.length === 0) {
+    console.error('Delete returned 0 rows — likely blocked by RLS policy')
+    throw new Error(
+      'No se pudo eliminar el producto. Verifica que tengas permisos de administrador o revisa las políticas RLS en Supabase.'
+    )
+  }
+
+  return true
+}
+
+/**
  * Normaliza un perfume de Supabase al formato que esperan los componentes.
  * Mapea las relaciones (imágenes, descuento) a campos planos.
  */

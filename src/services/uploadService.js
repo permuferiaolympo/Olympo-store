@@ -96,3 +96,64 @@ export async function uploadProductImage(file) {
     throw error
   }
 }
+
+/**
+ * Elimina una imagen de producto de Cloudflare R2.
+ * Envía una solicitud DELETE al Worker con la key del archivo.
+ *
+ * @param {string} imageUrl - La URL pública de la imagen (ej: https://pub-xxx.r2.dev/filename.jpg)
+ * @returns {Promise<boolean>} - true si se eliminó correctamente
+ */
+export async function deleteProductImage(imageUrl) {
+  if (!imageUrl) return false
+
+  // Extraer la key del archivo desde la URL pública
+  const publicDomain = import.meta.env.VITE_CLOUDFLARE_IMAGE_DELIVERY || ''
+  let fileKey = imageUrl
+
+  if (publicDomain && imageUrl.startsWith(publicDomain)) {
+    fileKey = imageUrl.replace(publicDomain.replace(/\/$/, ''), '').replace(/^\//, '')
+  } else {
+    // Si la URL no coincide con el dominio, extraer solo el path final
+    try {
+      const urlObj = new URL(imageUrl)
+      fileKey = urlObj.pathname.replace(/^\//, '')
+    } catch {
+      // Si no es una URL válida, usar como está
+      fileKey = imageUrl.split('/').pop()
+    }
+  }
+
+  if (!fileKey) {
+    console.warn('No se pudo extraer la key del archivo para eliminar:', imageUrl)
+    return false
+  }
+
+  let workerUrl = import.meta.env.VITE_WORKER_URL || import.meta.env.VITE_CLOUDFLARE_WORKER_URL
+
+  if (workerUrl) {
+    if (!workerUrl.startsWith('http://') && !workerUrl.startsWith('https://')) {
+      workerUrl = `https://${workerUrl}`
+    }
+
+    try {
+      const response = await fetch(`${workerUrl.replace(/\/$/, '')}/${fileKey}`, {
+        method: 'DELETE',
+      })
+
+      if (!response.ok) {
+        const errText = await response.text()
+        console.error(`Error eliminando imagen de R2 (${response.status}):`, errText)
+        return false
+      }
+
+      return true
+    } catch (err) {
+      console.error('Error al conectar con el Worker para eliminar imagen:', err)
+      return false
+    }
+  }
+
+  console.warn('No se configuró VITE_WORKER_URL, no se puede eliminar la imagen de R2')
+  return false
+}

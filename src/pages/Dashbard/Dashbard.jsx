@@ -14,9 +14,11 @@ import {
   FiStar,
   FiTrendingUp,
   FiEye,
+  FiTrash2,
+  FiX,
 } from 'react-icons/fi'
 import SectionHeader from '../../components/common/SectionHeader.jsx'
-import { getAllPerfumesAdmin } from '../../services/perfumeService.js'
+import { getAllPerfumesAdmin, deletePerfume } from '../../services/perfumeService.js'
 
 const ITEMS_PER_PAGE = 10
 
@@ -34,6 +36,10 @@ function Dashbard() {
 
   // Paginación
   const [currentPage, setCurrentPage] = useState(1)
+
+  // Eliminación
+  const [deleteTarget, setDeleteTarget] = useState(null)
+  const [deleting, setDeleting] = useState(false)
 
   useEffect(() => {
     async function fetchProducts() {
@@ -145,6 +151,21 @@ function Dashbard() {
     } else {
       setSortField(field)
       setSortAsc(true)
+    }
+  }
+
+  async function handleDelete() {
+    if (!deleteTarget) return
+    try {
+      setDeleting(true)
+      await deletePerfume(deleteTarget.id)
+      setProducts((prev) => prev.filter((p) => p.id !== deleteTarget.id))
+      setDeleteTarget(null)
+    } catch (err) {
+      console.error(err)
+      alert(err.message || 'Error al eliminar el producto.')
+    } finally {
+      setDeleting(false)
     }
   }
 
@@ -475,6 +496,14 @@ function Dashbard() {
                         >
                           <FiEye size={15} />
                         </Link>
+                        <button
+                          type="button"
+                          onClick={() => setDeleteTarget(product)}
+                          className="flex h-9 w-9 items-center justify-center rounded-xl border border-white/[0.06] bg-white/[0.04] text-white/50 transition-all duration-200 hover:border-red-500/30 hover:bg-red-500/10 hover:text-red-400"
+                          title="Eliminar producto"
+                        >
+                          <FiTrash2 size={15} />
+                        </button>
                       </div>
                     </td>
                   </tr>
@@ -553,6 +582,108 @@ function Dashbard() {
           </>
         )}
       </div>
+
+      {/* ── Modal de Confirmación de Eliminación ── */}
+      {deleteTarget && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
+          onClick={() => !deleting && setDeleteTarget(null)}
+        >
+          <div
+            className="relative mx-4 w-full max-w-md overflow-hidden rounded-2xl border border-white/[0.08] bg-[#1a1a1d] shadow-2xl shadow-black/50"
+            onClick={(e) => e.stopPropagation()}
+            style={{ animation: 'modalIn 0.2s ease-out' }}
+          >
+            {/* Header */}
+            <div className="flex items-center justify-between border-b border-white/[0.06] px-6 py-4">
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-red-500/10">
+                  <FiAlertTriangle className="text-red-400" size={20} />
+                </div>
+                <h3 className="text-lg font-semibold text-white">Eliminar producto</h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setDeleteTarget(null)}
+                disabled={deleting}
+                className="flex h-8 w-8 items-center justify-center rounded-lg text-white/40 transition hover:bg-white/[0.06] hover:text-white/60 disabled:opacity-30"
+              >
+                <FiX size={18} />
+              </button>
+            </div>
+
+            {/* Body */}
+            <div className="px-6 py-5">
+              <div className="flex items-center gap-4 rounded-xl border border-white/[0.06] bg-white/[0.03] p-4">
+                <div className="relative h-12 w-12 flex-shrink-0 overflow-hidden rounded-xl border border-white/[0.06] bg-white/[0.04]">
+                  {deleteTarget.image ? (
+                    <img
+                      src={deleteTarget.image}
+                      alt={deleteTarget.name}
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    <div className="flex h-full w-full items-center justify-center">
+                      <FiPackage className="text-white/20" size={18} />
+                    </div>
+                  )}
+                </div>
+                <div className="min-w-0">
+                  <p className="truncate font-medium text-white">{deleteTarget.name}</p>
+                  <p className="text-xs text-white/40">{deleteTarget.brand || 'Sin marca'}</p>
+                </div>
+              </div>
+              <p className="mt-4 text-sm text-white/50">
+                ¿Estás seguro de que deseas eliminar este producto? Esta acción es <span className="font-semibold text-red-400">irreversible</span> y se eliminarán todas las imágenes asociadas.
+              </p>
+            </div>
+
+            {/* Footer */}
+            <div className="flex items-center justify-end gap-3 border-t border-white/[0.06] px-6 py-4">
+              <button
+                type="button"
+                onClick={() => setDeleteTarget(null)}
+                disabled={deleting}
+                className="rounded-xl border border-white/[0.08] bg-white/[0.04] px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.15em] text-white/60 transition hover:bg-white/[0.08] hover:text-white disabled:opacity-30"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={handleDelete}
+                disabled={deleting}
+                className="inline-flex items-center gap-2 rounded-xl bg-red-500/15 px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.15em] text-red-400 transition hover:bg-red-500/25 disabled:opacity-50"
+              >
+                {deleting ? (
+                  <>
+                    <FiLoader className="animate-spin" size={14} />
+                    Eliminando...
+                  </>
+                ) : (
+                  <>
+                    <FiTrash2 size={14} />
+                    Eliminar
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Keyframe para la animación del modal */}
+      <style>{`
+        @keyframes modalIn {
+          from {
+            opacity: 0;
+            transform: scale(0.95) translateY(10px);
+          }
+          to {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+          }
+        }
+      `}</style>
     </div>
   )
 }
