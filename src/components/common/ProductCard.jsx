@@ -1,26 +1,41 @@
 import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
 import { FiShoppingBag } from 'react-icons/fi'
+import toast from 'react-hot-toast'
+import { useCart } from '../../context/CartContext.jsx'
 
 function ProductCard({ product }) {
-  const discountedPrice = product.discount
-    ? product.price - (product.price * product.discount) / 100
-    : product.price
+  const { addItem } = useCart()
+
+  const basePrice = Number(product.price) || 0
+  const discountPercent = Math.max(0, Number(product.discount) || 0)
+  const hasDiscount = discountPercent > 0
+  const discountedPrice = hasDiscount
+    ? basePrice - (basePrice * discountPercent) / 100
+    : basePrice
+  const imageSrc = product.image && typeof product.image === 'string' && product.image.trim()
+    ? product.image
+    : 'data:image/svg+xml;charset=UTF-8,%3Csvg xmlns="http://www.w3.org/2000/svg" width="600" height="600" viewBox="0 0 600 600"%3E%3Crect width="600" height="600" fill="%23111111"/%3E%3Ctext x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle" font-size="32" fill="%23D4AF37"%3EImagen no disponible%3C/text%3E%3C/svg%3E'
+
+  const handleAddToCart = () => {
+    addItem(product, 1)
+    toast.success(`Se agregó ${product.name} al carrito`)
+  }
 
   return (
     <motion.article
       whileHover={{ y: -6, scale: 1.01 }}
-      className="group flex h-full flex-col overflow-hidden rounded-[1.5rem] border border-white/10 bg-white/5 shadow-[0_30px_90px_-60px_rgba(0,0,0,0.85)]"
+      className="group mx-auto flex h-full max-w-[360px] flex-col overflow-hidden rounded-[1.5rem] border border-white/10 bg-white/5 shadow-[0_30px_90px_-60px_rgba(0,0,0,0.85)]"
     >
-      <div className="relative overflow-hidden">
+      <div className="relative overflow-hidden bg-black/5">
         <img
-          src={product.image}
-          alt={product.name}
-          className="h-[220px] w-full object-cover transition duration-500 group-hover:scale-[1.02] sm:h-[250px] md:h-[240px]"
+          src={imageSrc}
+          alt={product.name || 'Producto'}
+          className="h-[280px] w-full object-contain transition duration-500 group-hover:scale-[1.02] sm:h-[310px] md:h-[330px]"
         />
-        {product.discount > 0 && (
-          <div className="absolute left-4 top-4 rounded-full bg-[#D4AF37] px-3 py-2 text-xs uppercase tracking-[0.3em] text-black">
-            -{product.discount}%
+        {hasDiscount && (
+          <div className="absolute left-4 top-4 rounded-full bg-red-500 px-3 py-2 text-xs uppercase tracking-[0.3em] text-white shadow-sm">
+            -{discountPercent}%
           </div>
         )}
       </div>
@@ -40,8 +55,8 @@ function ProductCard({ product }) {
             <p className="text-[11px] uppercase tracking-[0.22em] text-white/60">Precio</p>
             <div className="flex items-center gap-2">
               <span className="text-xl font-semibold text-white">${discountedPrice.toFixed(0)}</span>
-              {product.discount > 0 && (
-                <span className="text-sm line-through text-white/40">${product.price}</span>
+              {hasDiscount && (
+                <span className="text-sm line-through text-white/40">${basePrice.toFixed(0)}</span>
               )}
             </div>
           </div>
@@ -54,6 +69,7 @@ function ProductCard({ product }) {
             </Link>
             <button
               type="button"
+              onClick={handleAddToCart}
               className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[#D4AF37]/20 bg-[#D4AF37] text-black transition hover:scale-105"
               aria-label={`Agregar ${product.name} al carrito`}
             >

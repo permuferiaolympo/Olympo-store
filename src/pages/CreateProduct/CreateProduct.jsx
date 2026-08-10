@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import { FiArrowLeft, FiPackage, FiDollarSign, FiCheck, FiImage, FiUploadCloud, FiTrash2, FiStar } from 'react-icons/fi'
 import SectionHeader from '../../components/common/SectionHeader.jsx'
 import { uploadProductImage } from '../../services/uploadService.js'
 import { getCategories } from '../../services/categoryService.js'
-import { createProduct, saveProductImage } from '../../services/productService.js'
+import { getPerfumeById } from '../../services/perfumeService.js'
+import { createDiscount, updateDiscount } from '../../services/discountService.js'
+import { createProduct, updateProduct, saveProductImage } from '../../services/productService.js'
 
 // ─── Componente de Slot de Imagen Individual ────────────────────────────────────
 function ImageSlot({ label, sublabel, image, onUpload, onRemove, isMain, large }) {
@@ -156,6 +158,12 @@ export default function CreateProduct() {
     price: '',
     stock: '1',
     category_id: '',
+    discount_mode: false,
+    manual_discount_type: 'percentage',
+    manual_discount_value: '',
+    manual_start_date: '',
+    manual_end_date: '',
+    manual_discount_active: true,
     description: '',
     characteristics: '',
     usage_day: '',
@@ -168,7 +176,7 @@ export default function CreateProduct() {
     new_arrival: false,
   })
 
-  // Categorías de Supabase
+  // Categorías y descuentos de Supabase
   const [categories, setCategories] = useState([])
   const [loadingCategories, setLoadingCategories] = useState(true)
 
@@ -176,6 +184,11 @@ export default function CreateProduct() {
   const [mainImage, setMainImage] = useState(null)    // string URL o null
   const [extraImage1, setExtraImage1] = useState(null) // string URL o null
   const [extraImage2, setExtraImage2] = useState(null) // string URL o null
+  const [imageModified, setImageModified] = useState({ main: false, extra1: false, extra2: false })
+  const { id } = useParams()
+  const isEditMode = Boolean(id)
+  const [currentDiscountId, setCurrentDiscountId] = useState(null)
+  const [loadingProduct, setLoadingProduct] = useState(false)
 
   // Estado de guardado
   const [saving, setSaving] = useState(false)
@@ -200,6 +213,64 @@ export default function CreateProduct() {
     loadCategories()
   }, [])
 
+  useEffect(() => {
+    if (!isEditMode) return
+
+    async function loadProduct() {
+      setLoadingProduct(true)
+      try {
+        const product = await getPerfumeById(id)
+        if (!product) {
+          toast.error('No se encontró el producto')
+          navigate('/dashboard')
+          return
+        }
+
+        const usageData = product.usageData || {}
+        setFormData({
+          name: product.name || '',
+          brand: product.brand || '',
+          price: product.price ?? '',
+          stock: product.stock ?? '1',
+          category_id: product.category?.id || '',
+          discount_mode: Boolean(product.discountRaw),
+          manual_discount_type: product.discountRaw?.discount_type || 'percentage',
+          manual_discount_value: product.discountRaw?.discount_value ?? '',
+          manual_start_date: product.discountRaw?.start_date
+            ? new Date(product.discountRaw.start_date).toISOString().slice(0, 10)
+            : '',
+          manual_end_date: product.discountRaw?.end_date
+            ? new Date(product.discountRaw.end_date).toISOString().slice(0, 10)
+            : '',
+          manual_discount_active: product.discountRaw?.active ?? true,
+          description: product.description || '',
+          characteristics: product.characteristics || '',
+          usage_day: usageData.day ?? '',
+          usage_night: usageData.night ?? '',
+          usage_autumn: usageData.autumn ?? '',
+          usage_spring: usageData.spring ?? '',
+          usage_summer: usageData.summer ?? '',
+          usage_winter: usageData.winter ?? '',
+          featured: product.featured ?? false,
+          new_arrival: product.new_arrival ?? false,
+        })
+
+        setCurrentDiscountId(product.discountRaw?.id ?? null)
+        setMainImage(product.image || null)
+        setExtraImage1(product.gallery?.[1] || null)
+        setExtraImage2(product.gallery?.[2] || null)
+        setImageModified({ main: false, extra1: false, extra2: false })
+      } catch (err) {
+        console.error(err)
+        toast.error('Error cargando datos del producto a editar')
+      } finally {
+        setLoadingProduct(false)
+      }
+    }
+
+    loadProduct()
+  }, [id, isEditMode, navigate])
+
   // Manejar cambios en campos de texto/select/checkbox
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target
@@ -207,6 +278,20 @@ export default function CreateProduct() {
       ...prev,
       [name]: type === 'checkbox' ? checked : value,
     }))
+  }
+
+  const handleImageUpload = (slot, url) => {
+    if (slot === 'main') setMainImage(url)
+    if (slot === 'extra1') setExtraImage1(url)
+    if (slot === 'extra2') setExtraImage2(url)
+    setImageModified((prev) => ({ ...prev, [slot]: true }))
+  }
+
+  const handleImageRemove = (slot) => {
+    if (slot === 'main') setMainImage(null)
+    if (slot === 'extra1') setExtraImage1(null)
+    if (slot === 'extra2') setExtraImage2(null)
+    setImageModified((prev) => ({ ...prev, [slot]: true }))
   }
 
   // Contar cuántas imágenes hay
@@ -266,29 +351,81 @@ export default function CreateProduct() {
         if (!Number.isNaN(value) && value >= 0) usageData.winter = value
       }
 
-      const perfume = await createProduct({
-        ...payloadBase,
-        usage_data: Object.keys(usageData).length > 0 ? usageData : null,
-      })
+      let selectedDiscountId = null
+      if (formData.discount_mode && formData.manual_discount_value) {
+        const discountName = `Descuento ${formData.manual_discount_type === 'percentage' ? `${formData.manual_discount_value}%` : `${formData.manual_discount_value}`}`
+        const discountPayload = {
+          name: discountName,
+          discount_type: formData.manual_discount_type,
+          discount_value: Number(formData.manual_discount_value),
+          start_date: formData.manual_start_date || null,
+          end_date: formData.manual_end_date || null,
+          active: formData.manual_discount_active,
+        }
 
-      // 2. Guardar las imágenes asociadas
-      const imagesToSave = [
-        mainImage && { url: mainImage, is_main: true, sort_order: 0, label: 'Principal' },
-        extraImage1 && { url: extraImage1, is_main: false, sort_order: 1, label: 'Adicional 1' },
-        extraImage2 && { url: extraImage2, is_main: false, sort_order: 2, label: 'Adicional 2' },
-      ].filter(Boolean)
-
-      for (const img of imagesToSave) {
-        await saveProductImage({
-          perfume_id: perfume.id,
-          image_url: img.url,
-          is_main: img.is_main,
-          sort_order: img.sort_order,
-          alt: `${perfume.name} - ${img.label}`,
-        })
+        if (currentDiscountId) {
+          try {
+            const discount = await updateDiscount(currentDiscountId, discountPayload)
+            selectedDiscountId = discount?.id || currentDiscountId
+          } catch (discountError) {
+            console.error('Error actualizando descuento:', discountError)
+            if (discountError?.message?.includes('not found') || discountError?.message?.includes('No rows')) {
+              selectedDiscountId = null
+            } else {
+              throw discountError
+            }
+          }
+        } else {
+          const discount = await createDiscount(discountPayload)
+          selectedDiscountId = discount?.id || null
+        }
       }
 
-      toast.success('¡Producto creado exitosamente!', { id: saveToast })
+      const finalPayload = {
+        ...payloadBase,
+        discount_id: formData.discount_mode ? selectedDiscountId : null,
+        usage_data: Object.keys(usageData).length > 0 ? usageData : null,
+      }
+
+      const perfume = isEditMode
+        ? await updateProduct(id, finalPayload)
+        : await createProduct(finalPayload)
+
+      const imagesToSave = [
+        mainImage && imageModified.main && { url: mainImage, is_main: true, sort_order: 0, label: 'Principal' },
+        extraImage1 && imageModified.extra1 && { url: extraImage1, is_main: false, sort_order: 1, label: 'Adicional 1' },
+        extraImage2 && imageModified.extra2 && { url: extraImage2, is_main: false, sort_order: 2, label: 'Adicional 2' },
+      ].filter(Boolean)
+
+      if (!isEditMode) {
+        const allImages = [
+          mainImage && { url: mainImage, is_main: true, sort_order: 0, label: 'Principal' },
+          extraImage1 && { url: extraImage1, is_main: false, sort_order: 1, label: 'Adicional 1' },
+          extraImage2 && { url: extraImage2, is_main: false, sort_order: 2, label: 'Adicional 2' },
+        ].filter(Boolean)
+
+        for (const img of allImages) {
+          await saveProductImage({
+            perfume_id: perfume.id,
+            image_url: img.url,
+            is_main: img.is_main,
+            sort_order: img.sort_order,
+            alt: `${perfume.name} - ${img.label}`,
+          })
+        }
+      } else {
+        for (const img of imagesToSave) {
+          await saveProductImage({
+            perfume_id: perfume.id,
+            image_url: img.url,
+            is_main: img.is_main,
+            sort_order: img.sort_order,
+            alt: `${perfume.name} - ${img.label}`,
+          })
+        }
+      }
+
+      toast.success(isEditMode ? '¡Producto actualizado exitosamente!' : '¡Producto creado exitosamente!', { id: saveToast })
       navigate('/dashboard')
     } catch (error) {
       console.error(error)
@@ -314,10 +451,9 @@ export default function CreateProduct() {
 
       <SectionHeader
         pretitle="Administración de Catálogo"
-        title="Crear Nuevo Producto"
-        children="Completa la información del perfume y sube sus imágenes a Cloudflare R2."
+        title={isEditMode ? 'Editar Producto' : 'Crear Nuevo Producto'}
+        children={isEditMode ? 'Actualiza la información del perfume y guarda los cambios.' : 'Completa la información del perfume y sube sus imágenes a Cloudflare R2.'}
       />
-
       <form onSubmit={handleSubmit} className="space-y-8">
         <div className="grid gap-8 lg:grid-cols-12">
           {/* Columna Izquierda: Información del producto */}
@@ -389,8 +525,8 @@ export default function CreateProduct() {
                 </div>
               </div>
 
-              {/* Precio y Stock */}
-              <div className="grid gap-4 sm:grid-cols-2">
+              {/* Precio, Stock y Descuento */}
+              <div className="grid gap-4 sm:grid-cols-3">
                 <div>
                   <label className="mb-2 block text-xs uppercase tracking-[0.25em] text-[#D4AF37]">
                     Precio ($ COP) *
@@ -425,7 +561,100 @@ export default function CreateProduct() {
                     className="w-full rounded-2xl border border-white/10 bg-white/5 px-5 py-4 text-white outline-none transition focus:border-[#D4AF37]/60 focus:ring-2 focus:ring-[#D4AF37]/20"
                   />
                 </div>
+
+                <div>
+                  <div className="mb-2 flex items-center justify-between gap-3">
+                    <label className="block text-xs uppercase tracking-[0.25em] text-[#D4AF37]">
+                      Aplicar descuento
+                    </label>
+                    <label className="flex items-center gap-2 text-[10px] uppercase tracking-[0.25em] text-white/70">
+                      <input
+                        type="checkbox"
+                        name="discount_mode"
+                        checked={formData.discount_mode}
+                        onChange={handleChange}
+                        className="h-4 w-4 accent-[#D4AF37] rounded"
+                      />
+                      Sí
+                    </label>
+                  </div>
+                </div>
               </div>
+
+              {formData.discount_mode && (
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div>
+                    <label className="mb-2 block text-xs uppercase tracking-[0.25em] text-[#D4AF37]">
+                      Tipo de descuento
+                    </label>
+                    <select
+                      name="manual_discount_type"
+                      value={formData.manual_discount_type}
+                      onChange={handleChange}
+                      className="w-full rounded-2xl border border-white/10 bg-[#18181b] px-5 py-4 text-white outline-none transition focus:border-[#D4AF37]/60 focus:ring-2 focus:ring-[#D4AF37]/20"
+                    >
+                      <option value="percentage">Porcentaje</option>
+                      <option value="fixed">Valor fijo</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="mb-2 block text-xs uppercase tracking-[0.25em] text-[#D4AF37]">
+                      Valor del descuento
+                    </label>
+                    <input
+                      type="number"
+                      name="manual_discount_value"
+                      min="0"
+                      step="0.01"
+                      placeholder="20"
+                      value={formData.manual_discount_value}
+                      onChange={handleChange}
+                      className="w-full rounded-2xl border border-white/10 bg-white/5 px-5 py-4 text-white outline-none transition focus:border-[#D4AF37]/60 focus:ring-2 focus:ring-[#D4AF37]/20"
+                    />
+                  </div>
+                  <div>
+                    <label className="mb-2 block text-xs uppercase tracking-[0.25em] text-[#D4AF37]">
+                      Activo
+                    </label>
+                    <label className="inline-flex items-center gap-3 rounded-2xl border border-white/10 bg-[#18181b] px-5 py-4 text-white">
+                      <input
+                        type="checkbox"
+                        name="manual_discount_active"
+                        checked={formData.manual_discount_active}
+                        onChange={handleChange}
+                        className="h-4 w-4 accent-[#D4AF37] rounded"
+                      />
+                      <span className="text-sm">Activo</span>
+                    </label>
+                  </div>
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <div>
+                      <label className="mb-2 block text-xs uppercase tracking-[0.25em] text-[#D4AF37]">
+                        Fecha inicio
+                      </label>
+                      <input
+                        type="date"
+                        name="manual_start_date"
+                        value={formData.manual_start_date}
+                        onChange={handleChange}
+                        className="w-full rounded-2xl border border-white/10 bg-[#18181b] px-4 py-3 text-white outline-none transition focus:border-[#D4AF37]/60 focus:ring-2 focus:ring-[#D4AF37]/20"
+                      />
+                    </div>
+                    <div>
+                      <label className="mb-2 block text-xs uppercase tracking-[0.25em] text-[#D4AF37]">
+                        Fecha fin
+                      </label>
+                      <input
+                        type="date"
+                        name="manual_end_date"
+                        value={formData.manual_end_date}
+                        onChange={handleChange}
+                        className="w-full rounded-2xl border border-white/10 bg-[#18181b] px-4 py-3 text-white outline-none transition focus:border-[#D4AF37]/60 focus:ring-2 focus:ring-[#D4AF37]/20"
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {/* Descripción */}
               <div>
@@ -536,8 +765,8 @@ export default function CreateProduct() {
                 label="Imagen Principal"
                 sublabel="Requerida"
                 image={mainImage}
-                onUpload={(url) => setMainImage(url)}
-                onRemove={() => setMainImage(null)}
+                onUpload={(url) => handleImageUpload('main', url)}
+                onRemove={() => handleImageRemove('main')}
                 isMain={true}
                 large={true}
               />
@@ -548,8 +777,8 @@ export default function CreateProduct() {
                   label="Adicional 1"
                   sublabel="Opcional"
                   image={extraImage1}
-                  onUpload={(url) => setExtraImage1(url)}
-                  onRemove={() => setExtraImage1(null)}
+                  onUpload={(url) => handleImageUpload('extra1', url)}
+                  onRemove={() => handleImageRemove('extra1')}
                   isMain={false}
                   large={false}
                 />
@@ -557,8 +786,8 @@ export default function CreateProduct() {
                   label="Adicional 2"
                   sublabel="Opcional"
                   image={extraImage2}
-                  onUpload={(url) => setExtraImage2(url)}
-                  onRemove={() => setExtraImage2(null)}
+                  onUpload={(url) => handleImageUpload('extra2', url)}
+                  onRemove={() => handleImageRemove('extra2')}
                   isMain={false}
                   large={false}
                 />
@@ -582,12 +811,12 @@ export default function CreateProduct() {
             {saving ? (
               <>
                 <div className="h-5 w-5 animate-spin rounded-full border-2 border-black border-t-transparent" />
-                <span>Guardando...</span>
+                <span>{isEditMode ? 'Guardando cambios...' : 'Guardando...'}</span>
               </>
             ) : (
               <>
                 <FiCheck size={20} />
-                <span>Crear Producto</span>
+                <span>{isEditMode ? 'Guardar cambios' : 'Crear producto'}</span>
               </>
             )}
           </button>

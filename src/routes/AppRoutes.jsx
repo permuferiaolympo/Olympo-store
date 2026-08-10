@@ -31,6 +31,7 @@ function AppRoutes() {
         <Route element={<ProtectedRoute />}>
           <Route path="dashboard" element={<Dashbard />} />
           <Route path="dashboard/create-product" element={<CreateProduct />} />
+          <Route path="dashboard/edit-product/:id" element={<CreateProduct />} />
         </Route>
       </Route>
     </Routes>

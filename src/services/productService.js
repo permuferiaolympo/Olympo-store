@@ -32,6 +32,7 @@ export async function createProduct(productData) {
     price,
     stock,
     category_id,
+    discount_id,
     featured = false,
     new_arrival = false,
     usage_data = null,
@@ -48,6 +49,7 @@ export async function createProduct(productData) {
     price: Number(price),
     stock: Number(stock),
     category_id: category_id || null,
+    discount_id: discount_id || null,
     featured,
     new_arrival,
     usage_data: usage_data && Object.keys(usage_data).length > 0 ? usage_data : null,
@@ -80,6 +82,82 @@ export async function createProduct(productData) {
     }
 
     console.error('Error al crear el producto:', error)
+    throw new Error(`Error en base de datos: ${error.message}`)
+  }
+
+  return data
+}
+
+export async function updateProduct(productId, productData) {
+  const {
+    name,
+    brand,
+    description,
+    characteristics,
+    price,
+    stock,
+    category_id,
+    discount_id,
+    featured = false,
+    new_arrival = false,
+    usage_data = null,
+  } = productData
+
+  const baseSlug = generateSlug(name)
+  const { data: currentPerfume, error: fetchError } = await supabase
+    .from('perfumes')
+    .select('slug')
+    .eq('id', productId)
+    .single()
+
+  if (fetchError) {
+    console.error('Error al obtener el slug actual del producto:', fetchError)
+    throw new Error(`Error en base de datos: ${fetchError.message}`)
+  }
+
+  const nextSlug = currentPerfume?.slug?.trim() || baseSlug
+
+  const updateData = {
+    name,
+    slug: nextSlug,
+    brand: brand || null,
+    description: description || null,
+    characteristics: characteristics || null,
+    price: Number(price),
+    stock: Number(stock),
+    category_id: category_id || null,
+    discount_id: discount_id || null,
+    featured,
+    new_arrival,
+    usage_data: usage_data && Object.keys(usage_data).length > 0 ? usage_data : null,
+  }
+
+  const { data, error } = await supabase
+    .from('perfumes')
+    .update(updateData)
+    .eq('id', productId)
+    .select()
+    .maybeSingle()
+
+  if (error) {
+    if (error.code === '23505' || error.message?.includes('perfumes_slug_key') || error.message?.includes('unique constraint')) {
+      const uniqueSlug = `${baseSlug}-${Math.random().toString(36).substring(2, 6)}`
+      const { data: retryData, error: retryError } = await supabase
+        .from('perfumes')
+        .update({ ...updateData, slug: uniqueSlug })
+        .eq('id', productId)
+        .select()
+        .single()
+
+      if (retryError) {
+        console.error('Error al actualizar el producto en el reintento:', retryError)
+        throw new Error(`Error en base de datos: ${retryError.message}`)
+      }
+
+      return retryData
+    }
+
+    console.error('Error al actualizar el producto:', error)
     throw new Error(`Error en base de datos: ${error.message}`)
   }
 

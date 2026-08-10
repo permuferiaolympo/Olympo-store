@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { FiShoppingBag, FiCloudSnow, FiUmbrella, FiWind, FiSunrise, FiSun, FiMoon, FiStar } from 'react-icons/fi'
+import toast from 'react-hot-toast'
 import SectionHeader from '../../components/common/SectionHeader.jsx'
+import { useCart } from '../../context/CartContext.jsx'
 import { getPerfumeBySlug, getPerfumesByCategory } from '../../services/perfumeService.js'
 
 function Product() {
@@ -10,6 +12,8 @@ function Product() {
   const [related, setRelated] = useState([])
   const [loading, setLoading] = useState(true)
   const [selectedImageIndex, setSelectedImageIndex] = useState(0)
+  const [quantity, setQuantity] = useState(1)
+  const { addItem } = useCart()
 
   useEffect(() => {
     async function fetchProduct() {
@@ -52,12 +56,18 @@ function Product() {
     )
   }
 
-  const discountedPrice = product.discount
-    ? product.price - (product.price * product.discount) / 100
-    : product.price
+  const discountPercentage = Number(product.discount) || 0
+  const discountedPrice = discountPercentage > 0
+    ? Number(product.price) - (Number(product.price) * discountPercentage) / 100
+    : Number(product.price)
+  const hasDiscount = discountPercentage > 0
 
-  const hasGallery = product.gallery && product.gallery.length > 0
-  const currentImage = hasGallery ? product.gallery[selectedImageIndex] || product.gallery[0] : null
+  const hasGallery = Array.isArray(product.gallery) && product.gallery.length > 0
+  const currentImage = hasGallery
+    ? product.gallery[selectedImageIndex] || product.gallery[0]
+    : product.image || null
+
+  const safeQuantity = Math.max(1, Math.min(quantity, product.stock || 999))
 
   // Normalize usage data here in case it's stored as a JSON string in the DB
   const usage = (() => {
@@ -71,6 +81,11 @@ function Product() {
     }
     return product.usageData || {}
   })()
+
+  const handleAddToCart = () => {
+    addItem(product, safeQuantity)
+    toast.success(`Se agregó ${safeQuantity} unidad${safeQuantity > 1 ? 'es' : ''} de ${product.name} al carrito`)
+  }
 
   return (
     <div className="space-y-12">
@@ -146,11 +161,18 @@ function Product() {
 
             {/* Precio */}
             <div className="space-y-1">
-              <p className="text-xs uppercase tracking-[0.3em] text-[#D4AF37]/70 font-semibold">Precio</p>
+              <div className="flex items-center gap-3">
+                <p className="text-xs uppercase tracking-[0.3em] text-[#D4AF37]/70 font-semibold">Precio</p>
+                {hasDiscount && (
+                  <span className="rounded-full bg-red-500/10 px-3 py-1 text-[10px] uppercase tracking-[0.28em] text-red-300">
+                    {discountPercentage}% OFF
+                  </span>
+                )}
+              </div>
               <div className="flex items-baseline gap-4">
                 <span className="text-4xl font-bold text-white">${discountedPrice.toLocaleString()}</span>
-                {product.discount > 0 && (
-                  <span className="text-base line-through text-white/40">${product.price.toLocaleString()}</span>
+                {hasDiscount && (
+                  <span className="text-base line-through text-white/40">${Number(product.price).toLocaleString()}</span>
                 )}
               </div>
               {product.stock !== undefined && (
@@ -220,20 +242,34 @@ function Product() {
               </div>
             )}
 
-            <div className="flex flex-col sm:flex-row items-center gap-4">
-              <button
-                type="button"
-                className="w-full sm:w-auto flex-1 inline-flex items-center justify-center gap-3 rounded-full bg-gradient-to-r from-[#D4AF37] to-[#AA7C11] px-8 py-4 text-xs font-semibold uppercase tracking-[0.28em] text-black shadow-[0_0_30px_rgba(212,175,55,0.2)] transition hover:brightness-110 active:scale-[0.99] disabled:opacity-50"
-                disabled={product.stock <= 0}
-              >
-                <FiShoppingBag size={18} /> {product.stock > 0 ? 'Agregar al carrito' : 'Agotado'}
-              </button>
-              <Link
-                to="/"
-                className="text-xs uppercase tracking-[0.25em] text-white/60 transition hover:text-[#D4AF37]"
-              >
-                Volver al inicio
-              </Link>
+            <div className="grid gap-4 sm:grid-cols-[1fr_auto] sm:items-end">
+              <div className="flex items-center gap-3 rounded-3xl border border-white/10 bg-black/40 px-4 py-3">
+                <label className="text-xs uppercase tracking-[0.25em] text-white/60">Cantidad</label>
+                <input
+                  type="number"
+                  min="1"
+                  max={product.stock || 99}
+                  value={quantity}
+                  onChange={(e) => setQuantity(Math.max(1, Number(e.target.value) || 1))}
+                  className="w-20 rounded-2xl border border-white/10 bg-white/5 px-3 py-2 text-center text-white outline-none transition focus:border-[#D4AF37]/60 focus:ring-2 focus:ring-[#D4AF37]/20"
+                />
+              </div>
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                <button
+                  type="button"
+                  onClick={handleAddToCart}
+                  className="w-full sm:w-auto flex-1 inline-flex items-center justify-center gap-3 rounded-full bg-gradient-to-r from-[#D4AF37] to-[#AA7C11] px-8 py-4 text-xs font-semibold uppercase tracking-[0.28em] text-black shadow-[0_0_30px_rgba(212,175,55,0.2)] transition hover:brightness-110 active:scale-[0.99] disabled:opacity-50"
+                  disabled={product.stock <= 0}
+                >
+                  <FiShoppingBag size={18} /> {product.stock > 0 ? 'Agregar al carrito' : 'Agotado'}
+                </button>
+                <Link
+                  to="/"
+                  className="text-xs uppercase tracking-[0.25em] text-white/60 transition hover:text-[#D4AF37]"
+                >
+                  Volver al inicio
+                </Link>
+              </div>
             </div>
           </div>
         </div>

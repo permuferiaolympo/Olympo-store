@@ -10,7 +10,7 @@ export async function getPerfumes() {
     .select(`
       *,
       category:categories(id, name, slug),
-      discount:discounts(id, name, discount_type, discount_value, active),
+      discount:discounts!perfumes_discount_id_fkey(id, name, discount_type, discount_value, active, start_date, end_date),
       images(id, cloudflare_image_id, image_url, alt, is_main, sort_order)
     `)
     .eq('is_active', true)
@@ -34,7 +34,7 @@ export async function getAllPerfumesAdmin() {
     .select(`
       *,
       category:categories(id, name, slug),
-      discount:discounts(id, name, discount_type, discount_value, active),
+      discount:discounts!perfumes_discount_id_fkey(id, name, discount_type, discount_value, active, start_date, end_date),
       images(id, cloudflare_image_id, image_url, alt, is_main, sort_order)
     `)
     .order('created_at', { ascending: false })
@@ -56,7 +56,7 @@ export async function getFeaturedPerfumes() {
     .select(`
       *,
       category:categories(id, name, slug),
-      discount:discounts(id, name, discount_type, discount_value, active),
+      discount:discounts!perfumes_discount_id_fkey(id, name, discount_type, discount_value, active, start_date, end_date),
       images(id, cloudflare_image_id, image_url, alt, is_main, sort_order)
     `)
     .eq('is_active', true)
@@ -80,7 +80,7 @@ export async function getPerfumeBySlug(slug) {
     .select(`
       *,
       category:categories(id, name, slug),
-      discount:discounts(id, name, discount_type, discount_value, active),
+      discount:discounts!perfumes_discount_id_fkey(id, name, discount_type, discount_value, active, start_date, end_date),
       status:status(id, name, color),
       images(id, cloudflare_image_id, image_url, alt, is_main, sort_order)
     `)
@@ -89,6 +89,27 @@ export async function getPerfumeBySlug(slug) {
 
   if (error) {
     console.error('Error fetching perfume by slug:', error)
+    return null
+  }
+
+  return normalizePerfume(data)
+}
+
+export async function getPerfumeById(id) {
+  const { data, error } = await supabase
+    .from('perfumes')
+    .select(`
+      *,
+      category:categories(id, name, slug),
+      discount:discounts!perfumes_discount_id_fkey(id, name, discount_type, discount_value, active, start_date, end_date),
+      status:status(id, name, color),
+      images(id, cloudflare_image_id, image_url, alt, is_main, sort_order)
+    `)
+    .eq('id', id)
+    .single()
+
+  if (error) {
+    console.error('Error fetching perfume by id:', error)
     return null
   }
 
@@ -104,7 +125,7 @@ export async function getPerfumesByCategory(categoryId) {
     .select(`
       *,
       category:categories(id, name, slug),
-      discount:discounts(id, name, discount_type, discount_value, active),
+      discount:discounts!perfumes_discount_id_fkey(id, name, discount_type, discount_value, active, start_date, end_date),
       images(id, cloudflare_image_id, image_url, alt, is_main, sort_order)
     `)
     .eq('is_active', true)
@@ -126,17 +147,36 @@ export async function getPerfumesByCategory(categoryId) {
 function normalizePerfume(raw) {
   const images = (raw.images || []).sort((a, b) => a.sort_order - b.sort_order)
   const mainImage = images.find((img) => img.is_main) || images[0]
+  const normalizedPrice = Number(raw.price) || 0
 
-  // Calcular descuento efectivo
+  // Calcular descuento efectivo de forma robusta
   let discountPercent = 0
-  if (raw.discount && raw.discount.active) {
-    if (raw.discount.discount_type === 'percentage') {
-      discountPercent = Number(raw.discount.discount_value)
-    } else if (raw.discount.discount_type === 'fixed') {
-      discountPercent = raw.price > 0
-        ? (Number(raw.discount.discount_value) / raw.price) * 100
+  const discountRelation = Array.isArray(raw.discount) ? raw.discount[0] : raw.discount
+  const directDiscountValue = raw.discount_value ?? raw.discount_percent ?? raw.discount
+  const discount = discountRelation || (directDiscountValue != null ? { discount_type: raw.discount_type || 'percentage', discount_value: directDiscountValue, active: true } : null)
+  const now = new Date()
+  const isDiscountActive = discount
+    ? (discount.active ?? discount.is_active ?? true)
+    : false
+  const isDiscountValid = isDiscountActive &&
+    (!discount.start_date || new Date(discount.start_date) <= now) &&
+    (!discount.end_date || new Date(discount.end_date) >= now)
+
+  if (isDiscountValid) {
+    const discountType = discount.discount_type || 'percentage'
+    const discountValue = Number(discount.discount_value ?? directDiscountValue ?? 0)
+
+    if (discountType === 'percentage') {
+      discountPercent = discountValue
+    } else if (discountType === 'fixed') {
+      discountPercent = normalizedPrice > 0
+        ? (discountValue / normalizedPrice) * 100
         : 0
     }
+  }
+
+  if (!Number.isFinite(discountPercent) || discountPercent < 0) {
+    discountPercent = 0
   }
 
   const parseJsonField = (value, fallback) => {

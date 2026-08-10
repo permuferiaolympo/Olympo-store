@@ -462,6 +462,13 @@ function Dashbard() {
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-2">
                         <Link
+                          to={`/dashboard/edit-product/${product.id}`}
+                          className="flex h-9 w-9 items-center justify-center rounded-xl border border-white/[0.06] bg-white/[0.04] text-white/50 transition-all duration-200 hover:border-[#D4AF37]/30 hover:bg-[#D4AF37]/10 hover:text-[#D4AF37]"
+                          title="Editar producto"
+                        >
+                          <FiEdit2 size={15} />
+                        </Link>
+                        <Link
                           to={`/product/${product.slug}`}
                           className="flex h-9 w-9 items-center justify-center rounded-xl border border-white/[0.06] bg-white/[0.04] text-white/50 transition-all duration-200 hover:border-[#D4AF37]/30 hover:bg-[#D4AF37]/10 hover:text-[#D4AF37]"
                           title="Ver producto"
