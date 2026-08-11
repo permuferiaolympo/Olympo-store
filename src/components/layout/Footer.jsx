@@ -8,11 +8,8 @@ function Footer() {
           <div className="space-y-4">
             <p className="text-sm uppercase tracking-[0.35em] text-[#D4AF37]/80">OLIMPO PERFUMERÍA</p>
             <h2 className="max-w-xl text-3xl font-[TrajanPro] uppercase tracking-[0.24em] text-white">
-              Esencia divina, poder eterno.
+              Esencia divina, poder eterno
             </h2>
-            <p className="max-w-md text-sm leading-7 text-white/70">
-              Descubre un universo de fragancias premium con atención bespoke y detalles exclusivos para cada entrega.
-            </p>
           </div>
 
           <div className="space-y-4">
@@ -36,7 +33,6 @@ function Footer() {
 
         <div className="flex flex-col gap-4 border-t border-[#D4AF37]/10 pt-6 text-sm text-white/60 sm:flex-row sm:items-center sm:justify-between">
           <p>© 2026 OLIMPO PERFUMERÍA. Todos los derechos reservados.</p>
-          <p>Diseño inspirado en el arte del lujo contemporáneo.</p>
         </div>
       </div>
     </footer>
