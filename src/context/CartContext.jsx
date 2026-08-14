@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useMemo, useState } from 'react'
+import { supabase } from '../lib/supabaseClient.js'
 
 const CartContext = createContext(null)
 
@@ -12,6 +13,12 @@ function calculateEffectivePrice(product) {
   }
 
   return basePrice - (basePrice * discount) / 100
+}
+
+function clampQuantity(quantity, stock) {
+  const requested = Math.max(1, Number(quantity) || 1)
+  const available = Math.max(0, Number(stock) || 0)
+  return Math.min(requested, available)
 }
 
 export function CartProvider({ children }) {
@@ -35,16 +42,19 @@ export function CartProvider({ children }) {
   }, [cartItems])
 
   const addItem = (product, quantity = 1) => {
-    const safeQuantity = Math.max(1, Number(quantity) || 1)
+    const safeQuantity = clampQuantity(quantity, product.stock)
     const effectivePrice = calculateEffectivePrice(product)
     setCartItems((prev) => {
+      if (safeQuantity === 0) return prev
+
       const existing = prev.find((item) => item.id === product.id)
       if (existing) {
         return prev.map((item) =>
           item.id === product.id
             ? {
                 ...item,
-                quantity: item.quantity + safeQuantity,
+                stock: Number(product.stock) || 0,
+                quantity: clampQuantity(item.quantity + safeQuantity, product.stock),
                 unitPrice: calculateEffectivePrice(product),
               }
             : item,
@@ -69,16 +79,13 @@ export function CartProvider({ children }) {
   }
 
   const updateQuantity = (productId, quantity) => {
-    const safeQuantity = Math.max(1, Number(quantity) || 1)
     setCartItems((prev) =>
-      prev.map((item) =>
-        item.id === productId
-          ? {
-              ...item,
-              quantity: safeQuantity,
-            }
-          : item,
-      ),
+      prev.flatMap((item) => {
+        if (item.id !== productId) return [item]
+
+        const nextQuantity = clampQuantity(quantity, item.stock)
+        return nextQuantity > 0 ? [{ ...item, quantity: nextQuantity }] : []
+      }),
     )
   }
 
@@ -87,6 +94,49 @@ export function CartProvider({ children }) {
   }
 
   const clearCart = () => setCartItems([])
+
+  const validateCartStock = async () => {
+    if (cartItems.length === 0) return []
+
+    const ids = cartItems.map((item) => item.id)
+    const { data, error } = await supabase
+      .from('perfumes')
+      .select('id, name, stock, is_active')
+      .in('id', ids)
+
+    if (error) throw new Error(`No fue posible verificar el inventario: ${error.message}`)
+
+    const currentProducts = new Map((data || []).map((product) => [product.id, product]))
+    const issues = cartItems.flatMap((item) => {
+      const product = currentProducts.get(item.id)
+      const available = Number(product?.stock) || 0
+
+      if (!product || !product.is_active || available < item.quantity) {
+        return [{
+          productId: item.id,
+          name: item.name,
+          available,
+          requested: item.quantity,
+        }]
+      }
+      return []
+    })
+
+    setCartItems((prev) => prev.flatMap((item) => {
+      const product = currentProducts.get(item.id)
+      const available = Number(product?.stock) || 0
+
+      if (!product || !product.is_active || available <= 0) return []
+
+      return [{
+        ...item,
+        stock: available,
+        quantity: Math.min(item.quantity, available),
+      }]
+    }))
+
+    return issues
+  }
 
   const totalItems = useMemo(
     () => cartItems.reduce((sum, item) => sum + item.quantity, 0),
@@ -106,6 +156,7 @@ export function CartProvider({ children }) {
     updateQuantity,
     removeItem,
     clearCart,
+    validateCartStock,
     totalItems,
     subtotal,
     total,

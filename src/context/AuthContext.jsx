@@ -3,17 +3,30 @@ import { supabase } from '../lib/supabaseClient'
 
 const AuthContext = createContext(null)
 
+function userHasAdminRole(user) {
+  const roles = [
+    user?.app_metadata?.role,
+    ...(Array.isArray(user?.app_metadata?.roles) ? user.app_metadata.roles : []),
+  ]
+
+  return roles.some((role) => typeof role === 'string' && role.toLowerCase() === 'admin')
+}
+
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false)
 
   useEffect(() => {
-    // Obtiene la sesión activa al montar
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null)
+    // Consulta el usuario en Supabase para no conservar metadata de rol obsoleta
+    // que pueda estar almacenada en la sesión local del navegador.
+    async function loadCurrentUser() {
+      const { data: { user }, error } = await supabase.auth.getUser()
+      setUser(error ? null : user)
       setLoading(false)
-    })
+    }
+
+    loadCurrentUser()
 
     // Escucha cambios en tiempo real (login / logout)
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
@@ -32,6 +45,7 @@ export function AuthProvider({ children }) {
     user,
     loading,
     isAuthenticated: !!user,
+    isAdmin: userHasAdminRole(user),
     isLoginModalOpen,
     openLoginModal,
     closeLoginModal,

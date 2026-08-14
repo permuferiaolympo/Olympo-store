@@ -1,12 +1,26 @@
 import { useMemo } from 'react'
+import toast from 'react-hot-toast'
 import SectionHeader from '../../components/common/SectionHeader.jsx'
 import { useCart } from '../../context/CartContext.jsx'
 
 function Cart() {
-  const { cartItems, subtotal, totalItems, updateQuantity, removeItem, clearCart } = useCart()
+  const { cartItems, subtotal, totalItems, updateQuantity, removeItem, validateCartStock } = useCart()
   const hasItems = cartItems.length > 0
 
   const formattedTotal = useMemo(() => subtotal.toFixed(0), [subtotal])
+
+  const handleCheckout = async () => {
+    try {
+      const stockIssues = await validateCartStock()
+      if (stockIssues.length > 0) {
+        toast.error(`Revisa el inventario de: ${stockIssues.map((item) => item.name).join(', ')}`)
+        return
+      }
+      toast.success('Inventario verificado. Tu pedido está listo para confirmar por WhatsApp.')
+    } catch (error) {
+      toast.error(error.message)
+    }
+  }
 
   return (
     <div className="space-y-14">
@@ -86,6 +100,7 @@ function Cart() {
             </div>
             <button
               type="button"
+              onClick={handleCheckout}
               className="w-full rounded-full bg-[#D4AF37] px-6 py-4 text-sm font-semibold uppercase tracking-[0.28em] text-black transition hover:scale-[1.01] disabled:cursor-not-allowed disabled:opacity-50"
               disabled={!hasItems}
             >

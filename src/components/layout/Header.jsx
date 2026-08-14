@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Link, NavLink, useNavigate } from 'react-router-dom'
-import { FiSearch, FiShoppingBag, FiMenu, FiX, FiShield, FiLogOut, FiUser } from 'react-icons/fi'
+import { FiSearch, FiShoppingBag, FiMenu, FiX, FiShield, FiLogOut } from 'react-icons/fi'
 import { useAuth } from '../../context/AuthContext.jsx'
 import { signOut } from '../../services/authService.js'
 import toast from 'react-hot-toast'
@@ -16,7 +16,7 @@ const navItems = [
 function Header() {
   const [open, setOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
-  const { isAuthenticated, openLoginModal } = useAuth()
+  const { isAuthenticated, isAdmin } = useAuth()
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -85,13 +85,15 @@ function Header() {
 
           {isAuthenticated && (
             <div className="flex items-center gap-2">
-              <Link
-                to="/dashboard"
-                className="flex items-center gap-2 rounded-full border border-[#D4AF37]/40 bg-[#D4AF37]/10 px-4 py-2 text-xs uppercase tracking-[0.2em] text-[#D4AF37] transition hover:bg-[#D4AF37]/20"
-              >
-                <FiShield size={14} />
-                Dashboard
-              </Link>
+              {isAdmin && (
+                <Link
+                  to="/dashboard"
+                  className="flex items-center gap-2 rounded-full border border-[#D4AF37]/40 bg-[#D4AF37]/10 px-4 py-2 text-xs uppercase tracking-[0.2em] text-[#D4AF37] transition hover:bg-[#D4AF37]/20"
+                >
+                  <FiShield size={14} />
+                  Dashboard
+                </Link>
+              )}
               <button
                 type="button"
                 onClick={handleLogout}
@@ -144,14 +146,16 @@ function Header() {
 
                 {isAuthenticated && (
                   <>
-                    <Link
-                      to="/dashboard"
-                      onClick={() => setOpen(false)}
-                      className="flex items-center gap-2 rounded-3xl border border-[#D4AF37]/40 bg-[#D4AF37]/10 px-4 py-3 text-sm uppercase tracking-[0.22em] text-[#D4AF37]"
-                    >
-                      <FiShield size={16} />
-                      Dashboard Admin
-                    </Link>
+                    {isAdmin && (
+                      <Link
+                        to="/dashboard"
+                        onClick={() => setOpen(false)}
+                        className="flex items-center gap-2 rounded-3xl border border-[#D4AF37]/40 bg-[#D4AF37]/10 px-4 py-3 text-sm uppercase tracking-[0.22em] text-[#D4AF37]"
+                      >
+                        <FiShield size={16} />
+                        Dashboard Admin
+                      </Link>
+                    )}
                     <button
                       onClick={() => {
                         setOpen(false)

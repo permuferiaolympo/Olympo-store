@@ -1,4 +1,5 @@
 import { supabase } from '../lib/supabaseClient'
+import { deleteProductImage } from './uploadService.js'
 
 /**
  * Convierte un texto en un slug URL-friendly
@@ -193,4 +194,83 @@ export async function saveProductImage({ perfume_id, image_url, cloudflare_image
   }
 
   return data
+}
+
+/**
+ * Sincroniza la galería persistida con la galería enviada desde el formulario.
+ * Conserva los registros que siguen vigentes, actualiza su orden y elimina tanto
+ * los registros como los archivos remotos que ya no pertenecen al producto.
+ */
+export async function syncProductImages(perfumeId, images) {
+  const desiredImages = images
+    .filter((image) => image?.url)
+    .filter((image, index, all) => all.findIndex((item) => item.url === image.url) === index)
+
+  const { data: existingImages, error: fetchError } = await supabase
+    .from('images')
+    .select('id, image_url')
+    .eq('perfume_id', perfumeId)
+
+  if (fetchError) {
+    throw new Error(`Error obteniendo imágenes actuales: ${fetchError.message}`)
+  }
+
+  const existingByUrl = new Map()
+  for (const image of existingImages || []) {
+    const matches = existingByUrl.get(image.image_url) || []
+    matches.push(image)
+    existingByUrl.set(image.image_url, matches)
+  }
+
+  const retainedIds = new Set()
+
+  // Evita tener dos imágenes principales mientras se reordena la galería.
+  if ((existingImages || []).length > 0) {
+    const { error } = await supabase
+      .from('images')
+      .update({ is_main: false })
+      .eq('perfume_id', perfumeId)
+
+    if (error) throw new Error(`Error preparando la galería: ${error.message}`)
+  }
+
+  for (const [sortOrder, image] of desiredImages.entries()) {
+    const existing = existingByUrl.get(image.url)?.shift()
+    const imageData = {
+      image_url: image.url,
+      cloudflare_image_id: image.cloudflare_image_id || image.url.split('/').pop() || `img_${Date.now()}`,
+      is_main: Boolean(image.is_main),
+      sort_order: sortOrder,
+      alt: image.alt || 'Imagen de producto',
+    }
+
+    if (existing) {
+      const { error } = await supabase.from('images').update(imageData).eq('id', existing.id)
+      if (error) throw new Error(`Error actualizando imagen: ${error.message}`)
+      retainedIds.add(existing.id)
+    } else {
+      const { error } = await supabase
+        .from('images')
+        .insert([{ perfume_id: perfumeId, ...imageData }])
+      if (error) throw new Error(`Error guardando imagen: ${error.message}`)
+    }
+  }
+
+  const obsoleteImages = (existingImages || []).filter((image) => !retainedIds.has(image.id))
+  if (obsoleteImages.length === 0) return
+
+  const { error: deleteError } = await supabase
+    .from('images')
+    .delete()
+    .in('id', obsoleteImages.map((image) => image.id))
+
+  if (deleteError) throw new Error(`Error eliminando imágenes antiguas: ${deleteError.message}`)
+
+  await Promise.all(
+    obsoleteImages.map((image) =>
+      deleteProductImage(image.image_url).catch((error) => {
+        console.warn(`No se pudo eliminar la imagen remota: ${image.image_url}`, error)
+      }),
+    ),
+  )
 }

@@ -7,7 +7,7 @@ import { uploadProductImage } from '../../services/uploadService.js'
 import { getCategories } from '../../services/categoryService.js'
 import { getPerfumeById } from '../../services/perfumeService.js'
 import { createDiscount, updateDiscount } from '../../services/discountService.js'
-import { createProduct, updateProduct, saveProductImage } from '../../services/productService.js'
+import { createProduct, updateProduct, syncProductImages } from '../../services/productService.js'
 
 // ─── Componente de Slot de Imagen Individual ────────────────────────────────────
 function ImageSlot({ label, sublabel, image, onUpload, onRemove, isMain, large }) {
@@ -184,7 +184,6 @@ export default function CreateProduct() {
   const [mainImage, setMainImage] = useState(null)    // string URL o null
   const [extraImage1, setExtraImage1] = useState(null) // string URL o null
   const [extraImage2, setExtraImage2] = useState(null) // string URL o null
-  const [imageModified, setImageModified] = useState({ main: false, extra1: false, extra2: false })
   const { id } = useParams()
   const isEditMode = Boolean(id)
   const [currentDiscountId, setCurrentDiscountId] = useState(null)
@@ -259,7 +258,6 @@ export default function CreateProduct() {
         setMainImage(product.image || null)
         setExtraImage1(product.gallery?.[1] || null)
         setExtraImage2(product.gallery?.[2] || null)
-        setImageModified({ main: false, extra1: false, extra2: false })
       } catch (err) {
         console.error(err)
         toast.error('Error cargando datos del producto a editar')
@@ -284,14 +282,12 @@ export default function CreateProduct() {
     if (slot === 'main') setMainImage(url)
     if (slot === 'extra1') setExtraImage1(url)
     if (slot === 'extra2') setExtraImage2(url)
-    setImageModified((prev) => ({ ...prev, [slot]: true }))
   }
 
   const handleImageRemove = (slot) => {
     if (slot === 'main') setMainImage(null)
     if (slot === 'extra1') setExtraImage1(null)
     if (slot === 'extra2') setExtraImage2(null)
-    setImageModified((prev) => ({ ...prev, [slot]: true }))
   }
 
   // Contar cuántas imágenes hay
@@ -391,39 +387,11 @@ export default function CreateProduct() {
         ? await updateProduct(id, finalPayload)
         : await createProduct(finalPayload)
 
-      const imagesToSave = [
-        mainImage && imageModified.main && { url: mainImage, is_main: true, sort_order: 0, label: 'Principal' },
-        extraImage1 && imageModified.extra1 && { url: extraImage1, is_main: false, sort_order: 1, label: 'Adicional 1' },
-        extraImage2 && imageModified.extra2 && { url: extraImage2, is_main: false, sort_order: 2, label: 'Adicional 2' },
-      ].filter(Boolean)
-
-      if (!isEditMode) {
-        const allImages = [
-          mainImage && { url: mainImage, is_main: true, sort_order: 0, label: 'Principal' },
-          extraImage1 && { url: extraImage1, is_main: false, sort_order: 1, label: 'Adicional 1' },
-          extraImage2 && { url: extraImage2, is_main: false, sort_order: 2, label: 'Adicional 2' },
-        ].filter(Boolean)
-
-        for (const img of allImages) {
-          await saveProductImage({
-            perfume_id: perfume.id,
-            image_url: img.url,
-            is_main: img.is_main,
-            sort_order: img.sort_order,
-            alt: `${perfume.name} - ${img.label}`,
-          })
-        }
-      } else {
-        for (const img of imagesToSave) {
-          await saveProductImage({
-            perfume_id: perfume.id,
-            image_url: img.url,
-            is_main: img.is_main,
-            sort_order: img.sort_order,
-            alt: `${perfume.name} - ${img.label}`,
-          })
-        }
-      }
+      await syncProductImages(perfume.id, [
+        mainImage && { url: mainImage, is_main: true, alt: `${perfume.name} - Principal` },
+        extraImage1 && { url: extraImage1, is_main: false, alt: `${perfume.name} - Adicional 1` },
+        extraImage2 && { url: extraImage2, is_main: false, alt: `${perfume.name} - Adicional 2` },
+      ].filter(Boolean))
 
       toast.success(isEditMode ? '¡Producto actualizado exitosamente!' : '¡Producto creado exitosamente!', { id: saveToast })
       navigate('/dashboard')
@@ -805,7 +773,7 @@ export default function CreateProduct() {
         <div className="flex justify-end pt-4">
           <button
             type="submit"
-            disabled={saving}
+            disabled={saving || loadingProduct || loadingCategories}
             className="flex items-center gap-3 rounded-full bg-gradient-to-r from-[#D4AF37] to-[#AA7C11] px-10 py-5 text-sm font-semibold uppercase tracking-[0.28em] text-black shadow-[0_0_40px_rgba(212,175,55,0.3)] transition hover:brightness-110 active:scale-[0.99] disabled:opacity-50"
           >
             {saving ? (
