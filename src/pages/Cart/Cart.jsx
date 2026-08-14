@@ -1,13 +1,11 @@
-import { useMemo } from 'react'
 import toast from 'react-hot-toast'
 import SectionHeader from '../../components/common/SectionHeader.jsx'
 import { useCart } from '../../context/CartContext.jsx'
+import { formatCopCurrency } from '../../lib/currency.js'
 
 function Cart() {
   const { cartItems, subtotal, totalItems, updateQuantity, removeItem, validateCartStock } = useCart()
   const hasItems = cartItems.length > 0
-
-  const formattedTotal = useMemo(() => subtotal.toFixed(0), [subtotal])
 
   const handleCheckout = async () => {
     try {
@@ -63,11 +61,11 @@ function Cart() {
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className="text-lg font-semibold text-white">${item.unitPrice.toFixed(0)}</p>
+                  <p className="text-lg font-semibold text-white">{formatCopCurrency(item.unitPrice)}</p>
                   {item.discount > 0 && (
-                    <p className="text-xs line-through text-white/40">${item.originalPrice.toFixed(0)}</p>
+                    <p className="text-xs line-through text-white/40">{formatCopCurrency(item.originalPrice)}</p>
                   )}
-                  <p className="mt-2 text-sm uppercase tracking-[0.3em] text-white/60">Total ${ (item.unitPrice * item.quantity).toFixed(0) }</p>
+                  <p className="mt-2 text-sm uppercase tracking-[0.3em] text-white/60">Total {formatCopCurrency(item.unitPrice * item.quantity)}</p>
                 </div>
               </div>
             ))
@@ -87,16 +85,12 @@ function Cart() {
               </div>
               <div className="flex items-center justify-between text-sm text-white/70">
                 <span>Subtotal</span>
-                <span>${subtotal.toFixed(0)}</span>
-              </div>
-              <div className="flex items-center justify-between text-sm text-white/70">
-                <span>Envío</span>
-                <span>Premium</span>
+                <span>{formatCopCurrency(subtotal)}</span>
               </div>
             </div>
             <div className="flex items-center justify-between text-white">
               <span className="text-sm uppercase tracking-[0.3em] text-white/70">Total estimado</span>
-              <span className="text-2xl font-semibold text-white">${formattedTotal}</span>
+              <span className="text-2xl font-semibold text-white">{formatCopCurrency(subtotal)}</span>
             </div>
             <button
               type="button"

@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { FiShoppingBag } from 'react-icons/fi'
 import toast from 'react-hot-toast'
 import { useCart } from '../../context/CartContext.jsx'
+import { formatCopCurrency } from '../../lib/currency.js'
 
 function ProductCard({ product }) {
   const { addItem } = useCart()
@@ -54,9 +55,9 @@ function ProductCard({ product }) {
           <div>
             <p className="text-[11px] uppercase tracking-[0.22em] text-white/60">Precio</p>
             <div className="flex items-center gap-2">
-              <span className="text-xl font-semibold text-white">${discountedPrice.toFixed(0)}</span>
+              <span className="text-xl font-semibold text-white">{formatCopCurrency(discountedPrice)}</span>
               {hasDiscount && (
-                <span className="text-sm line-through text-white/40">${basePrice.toFixed(0)}</span>
+                <span className="text-sm line-through text-white/40">{formatCopCurrency(basePrice)}</span>
               )}
             </div>
           </div>

@@ -19,6 +19,7 @@ import {
 } from 'react-icons/fi'
 import SectionHeader from '../../components/common/SectionHeader.jsx'
 import { getAllPerfumesAdmin, deletePerfume } from '../../services/perfumeService.js'
+import { formatCopCurrency } from '../../lib/currency.js'
 
 const ITEMS_PER_PAGE = 10
 
@@ -201,15 +202,6 @@ function Dashbard() {
         {stock} uds
       </span>
     )
-  }
-
-  function formatPrice(price) {
-    return new Intl.NumberFormat('es-CO', {
-      style: 'currency',
-      currency: 'COP',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(price)
   }
 
   return (
@@ -440,15 +432,15 @@ function Dashbard() {
                         {product.discount > 0 ? (
                           <>
                             <span className="text-sm font-semibold text-white">
-                              {formatPrice(product.price * (1 - product.discount / 100))}
+                              {formatCopCurrency(product.price * (1 - product.discount / 100))}
                             </span>
                             <span className="text-xs text-white/30 line-through">
-                              {formatPrice(product.price)}
+                              {formatCopCurrency(product.price)}
                             </span>
                           </>
                         ) : (
                           <span className="text-sm font-semibold text-white">
-                            {formatPrice(product.price)}
+                            {formatCopCurrency(product.price)}
                           </span>
                         )}
                       </div>

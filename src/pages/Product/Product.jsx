@@ -5,6 +5,7 @@ import toast from 'react-hot-toast'
 import SectionHeader from '../../components/common/SectionHeader.jsx'
 import { useCart } from '../../context/CartContext.jsx'
 import { getPerfumeBySlug, getPerfumesByCategory } from '../../services/perfumeService.js'
+import { formatCopCurrency } from '../../lib/currency.js'
 
 function Product() {
   const { slug } = useParams()
@@ -170,9 +171,9 @@ function Product() {
                 )}
               </div>
               <div className="flex items-baseline gap-4">
-                <span className="text-4xl font-bold text-white">${discountedPrice.toLocaleString()}</span>
+                <span className="text-4xl font-bold text-white">{formatCopCurrency(discountedPrice)}</span>
                 {hasDiscount && (
-                  <span className="text-base line-through text-white/40">${Number(product.price).toLocaleString()}</span>
+                  <span className="text-base line-through text-white/40">{formatCopCurrency(product.price)}</span>
                 )}
               </div>
               {product.stock !== undefined && (

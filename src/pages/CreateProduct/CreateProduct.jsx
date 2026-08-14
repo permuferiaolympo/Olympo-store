@@ -8,6 +8,7 @@ import { getCategories } from '../../services/categoryService.js'
 import { getPerfumeById } from '../../services/perfumeService.js'
 import { createDiscount, updateDiscount } from '../../services/discountService.js'
 import { createProduct, updateProduct, syncProductImages } from '../../services/productService.js'
+import { formatCopCurrency } from '../../lib/currency.js'
 
 // ─── Componente de Slot de Imagen Individual ────────────────────────────────────
 function ImageSlot({ label, sublabel, image, onUpload, onRemove, isMain, large }) {
@@ -513,6 +514,9 @@ export default function CreateProduct() {
                       className="w-full rounded-2xl border border-white/10 bg-white/5 pl-12 pr-5 py-4 text-white outline-none transition focus:border-[#D4AF37]/60 focus:ring-2 focus:ring-[#D4AF37]/20"
                     />
                   </div>
+                  {formData.price && (
+                    <p className="mt-2 text-xs text-white/45">Vista previa: {formatCopCurrency(formData.price)}</p>
+                  )}
                 </div>
 
                 <div>
