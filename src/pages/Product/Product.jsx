@@ -6,12 +6,14 @@ import SectionHeader from '../../components/common/SectionHeader.jsx'
 import { useCart } from '../../context/CartContext.jsx'
 import { getPerfumeBySlug, getPerfumesByCategory } from '../../services/perfumeService.js'
 import { formatCopCurrency } from '../../lib/currency.js'
+import { getDiscountPercentage, getEffectivePrice } from '../../lib/pricing.js'
 
 function Product() {
   const { slug } = useParams()
   const [product, setProduct] = useState(null)
   const [related, setRelated] = useState([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
   const [selectedImageIndex, setSelectedImageIndex] = useState(0)
   const [quantity, setQuantity] = useState(1)
   const { addItem } = useCart()
@@ -19,6 +21,7 @@ function Product() {
   useEffect(() => {
     async function fetchProduct() {
       setLoading(true)
+      setError(null)
       try {
         const perfume = await getPerfumeBySlug(slug)
         setProduct(perfume)
@@ -31,6 +34,7 @@ function Product() {
         }
       } catch (err) {
         console.error('Error loading product:', err)
+        setError('No fue posible cargar este perfume. Intenta nuevamente más tarde.')
       } finally {
         setLoading(false)
       }
@@ -49,7 +53,7 @@ function Product() {
   if (!product) {
     return (
       <div className="flex min-h-[60vh] flex-col items-center justify-center gap-4">
-        <p className="text-xl text-white/60">Perfume no encontrado</p>
+        <p className="text-xl text-white/60">{error || 'Perfume no encontrado'}</p>
         <Link to="/" className="text-sm uppercase tracking-[0.3em] text-[#D4AF37] transition hover:text-[#D4AF37]/80">
           Volver al inicio
         </Link>
@@ -57,10 +61,8 @@ function Product() {
     )
   }
 
-  const discountPercentage = Number(product.discount) || 0
-  const discountedPrice = discountPercentage > 0
-    ? Number(product.price) - (Number(product.price) * discountPercentage) / 100
-    : Number(product.price)
+  const discountPercentage = getDiscountPercentage(product)
+  const discountedPrice = getEffectivePrice(product)
   const hasDiscount = discountPercentage > 0
 
   const hasGallery = Array.isArray(product.gallery) && product.gallery.length > 0

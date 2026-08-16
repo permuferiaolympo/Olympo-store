@@ -3,7 +3,6 @@ import { Toaster } from 'react-hot-toast'
 import { AuthProvider } from './context/AuthContext.jsx'
 import { CartProvider } from './context/CartContext.jsx'
 import AppRoutes from './routes/AppRoutes.jsx'
-import LoginModal from './components/common/LoginModal.jsx'
 
 function App() {
   return (
@@ -11,7 +10,6 @@ function App() {
       <CartProvider>
         <BrowserRouter>
           <AppRoutes />
-          <LoginModal />
           <Toaster
             position="top-right"
             toastOptions={{

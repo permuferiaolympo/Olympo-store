@@ -28,6 +28,7 @@ function shuffleArray(array) {
 function Home() {
   const [perfumes, setPerfumes] = useState([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
   const [currentIndex, setCurrentIndex] = useState(0)
   const [isPaused, setIsPaused] = useState(false)
   const [visibleCount, setVisibleCount] = useState(4)
@@ -35,6 +36,7 @@ function Home() {
   // Fetch and randomize perfumes
   const loadData = async () => {
     setLoading(true)
+    setError(null)
     try {
       let perfumesData = await getFeaturedPerfumes()
       // Fallback if no products are flagged as featured in database
@@ -45,6 +47,7 @@ function Home() {
       setCurrentIndex(0)
     } catch (err) {
       console.error('Error loading home data:', err)
+      setError('No fue posible cargar las fragancias destacadas.')
     } finally {
       setLoading(false)
     }
@@ -274,7 +277,7 @@ function Home() {
           <div className="flex min-h-[250px] flex-col items-center justify-center rounded-3xl border border-dashed border-white/15 bg-white/5 p-10 text-center space-y-4">
             <FiShoppingBag className="h-10 w-10 text-[#D4AF37]/60" />
             <p className="text-sm text-white/70">
-              No hay perfumes disponibles por el momento.
+              {error || 'No hay perfumes disponibles por el momento.'}
             </p>
           </div>
         )}

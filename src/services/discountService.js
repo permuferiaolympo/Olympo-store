@@ -1,19 +1,5 @@
 import { supabase } from '../lib/supabaseClient'
 
-export async function getDiscounts() {
-  const { data, error } = await supabase
-    .from('discounts')
-    .select('*')
-    .order('name', { ascending: true })
-
-  if (error) {
-    console.error('Error fetching discounts from Supabase:', error)
-    return []
-  }
-
-  return (data || []).filter((discount) => discount.active !== false)
-}
-
 export async function createDiscount(discountData) {
   const { name, discount_type, discount_value, start_date, end_date, active = true } = discountData
 

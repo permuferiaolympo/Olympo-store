@@ -14,7 +14,18 @@ function Cart() {
         toast.error(`Revisa el inventario de: ${stockIssues.map((item) => item.name).join(', ')}`)
         return
       }
-      toast.success('Inventario verificado. Tu pedido está listo para confirmar por WhatsApp.')
+
+      const phone = import.meta.env.VITE_WHATSAPP_NUMBER?.replace(/\D/g, '')
+      if (!phone) {
+        toast.error('Configura VITE_WHATSAPP_NUMBER para enviar pedidos por WhatsApp.')
+        return
+      }
+
+      const items = cartItems
+        .map((item) => `• ${item.name} x${item.quantity} — ${formatCopCurrency(item.unitPrice * item.quantity)}`)
+        .join('\n')
+      const message = encodeURIComponent(`Hola, quiero confirmar este pedido:\n\n${items}\n\nTotal: ${formatCopCurrency(subtotal)}`)
+      window.open(`https://wa.me/${phone}?text=${message}`, '_blank', 'noopener,noreferrer')
     } catch (error) {
       toast.error(error.message)
     }
@@ -101,7 +112,7 @@ function Cart() {
               Confirmar vía WhatsApp
             </button>
             <p className="text-xs leading-6 text-white/60">
-              El botón está preparado para iniciar la orden por WhatsApp cuando integramos la lógica de envío.
+              El inventario se valida antes de abrir el pedido en WhatsApp.
             </p>
           </div>
         </aside>

@@ -68,13 +68,13 @@ function Header() {
         </nav>
 
         <div className="hidden items-center gap-3 md:flex">
-          <button
-            type="button"
+          <Link
+            to="/catalog"
             aria-label="Buscar"
             className="grid h-11 w-11 place-items-center rounded-full border border-[#D4AF37]/20 bg-white/5 text-[#D4AF37] transition hover:border-[#D4AF37]/40 hover:bg-white/10"
           >
             <FiSearch size={18} />
-          </button>
+          </Link>
           <Link
             to="/cart"
             className="grid h-11 w-11 place-items-center rounded-full border border-[#D4AF37]/20 bg-white/5 text-[#D4AF37] transition hover:border-[#D4AF37]/40 hover:bg-white/10"

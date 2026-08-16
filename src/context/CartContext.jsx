@@ -1,19 +1,8 @@
 import { createContext, useContext, useEffect, useMemo, useState } from 'react'
 import { supabase } from '../lib/supabaseClient.js'
+import { getEffectivePrice } from '../lib/pricing.js'
 
 const CartContext = createContext(null)
-
-function calculateEffectivePrice(product) {
-  const basePrice = Number(product.price) || 0
-  const discount = Number(product.discount) || 0
-  const hasDiscount = discount > 0
-
-  if (!hasDiscount) {
-    return basePrice
-  }
-
-  return basePrice - (basePrice * discount) / 100
-}
 
 function clampQuantity(quantity, stock) {
   const requested = Math.max(1, Number(quantity) || 1)
@@ -43,7 +32,7 @@ export function CartProvider({ children }) {
 
   const addItem = (product, quantity = 1) => {
     const safeQuantity = clampQuantity(quantity, product.stock)
-    const effectivePrice = calculateEffectivePrice(product)
+    const effectivePrice = getEffectivePrice(product)
     setCartItems((prev) => {
       if (safeQuantity === 0) return prev
 
@@ -55,7 +44,7 @@ export function CartProvider({ children }) {
                 ...item,
                 stock: Number(product.stock) || 0,
                 quantity: clampQuantity(item.quantity + safeQuantity, product.stock),
-                unitPrice: calculateEffectivePrice(product),
+                unitPrice: getEffectivePrice(product),
               }
             : item,
         )

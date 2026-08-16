@@ -1,27 +1,29 @@
 import { supabase } from '../lib/supabaseClient'
 
+const PERFUME_SELECT = `
+  *,
+  category:categories(id, name, slug),
+  discount:discounts!perfumes_discount_id_fkey(id, name, discount_type, discount_value, active, start_date, end_date),
+  status:status(id, name, color),
+  images(id, cloudflare_image_id, image_url, alt, is_main, sort_order)
+`
+
+async function getPerfumeList(query, context) {
+  const { data, error } = await query
+  if (error) throw new Error(`Error cargando ${context}: ${error.message}`)
+  return (data || []).map(normalizePerfume)
+}
+
 /**
  * Obtiene todos los perfumes activos con sus relaciones.
  * Incluye: categoría, descuento e imagen principal.
  */
 export async function getPerfumes() {
-  const { data, error } = await supabase
+  return getPerfumeList(supabase
     .from('perfumes')
-    .select(`
-      *,
-      category:categories(id, name, slug),
-      discount:discounts!perfumes_discount_id_fkey(id, name, discount_type, discount_value, active, start_date, end_date),
-      images(id, cloudflare_image_id, image_url, alt, is_main, sort_order)
-    `)
+    .select(PERFUME_SELECT)
     .eq('is_active', true)
-    .order('created_at', { ascending: false })
-
-  if (error) {
-    console.error('Error fetching perfumes:', error)
-    return []
-  }
-
-  return data.map(normalizePerfume)
+    .order('created_at', { ascending: false }), 'los perfumes')
 }
 
 /**
@@ -29,46 +31,22 @@ export async function getPerfumes() {
  * Incluye: categoría, descuento e imagen principal.
  */
 export async function getAllPerfumesAdmin() {
-  const { data, error } = await supabase
+  return getPerfumeList(supabase
     .from('perfumes')
-    .select(`
-      *,
-      category:categories(id, name, slug),
-      discount:discounts!perfumes_discount_id_fkey(id, name, discount_type, discount_value, active, start_date, end_date),
-      images(id, cloudflare_image_id, image_url, alt, is_main, sort_order)
-    `)
-    .order('created_at', { ascending: false })
-
-  if (error) {
-    console.error('Error fetching all perfumes (admin):', error)
-    return []
-  }
-
-  return data.map(normalizePerfume)
+    .select(PERFUME_SELECT)
+    .order('created_at', { ascending: false }), 'los perfumes del panel')
 }
 
 /**
  * Obtiene los perfumes destacados (featured = true).
  */
 export async function getFeaturedPerfumes() {
-  const { data, error } = await supabase
+  return getPerfumeList(supabase
     .from('perfumes')
-    .select(`
-      *,
-      category:categories(id, name, slug),
-      discount:discounts!perfumes_discount_id_fkey(id, name, discount_type, discount_value, active, start_date, end_date),
-      images(id, cloudflare_image_id, image_url, alt, is_main, sort_order)
-    `)
+    .select(PERFUME_SELECT)
     .eq('is_active', true)
     .eq('featured', true)
-    .order('created_at', { ascending: false })
-
-  if (error) {
-    console.error('Error fetching featured perfumes:', error)
-    return []
-  }
-
-  return data.map(normalizePerfume)
+    .order('created_at', { ascending: false }), 'los perfumes destacados')
 }
 
 /**
@@ -77,19 +55,13 @@ export async function getFeaturedPerfumes() {
 export async function getPerfumeBySlug(slug) {
   const { data, error } = await supabase
     .from('perfumes')
-    .select(`
-      *,
-      category:categories(id, name, slug),
-      discount:discounts!perfumes_discount_id_fkey(id, name, discount_type, discount_value, active, start_date, end_date),
-      status:status(id, name, color),
-      images(id, cloudflare_image_id, image_url, alt, is_main, sort_order)
-    `)
+    .select(PERFUME_SELECT)
     .eq('slug', slug)
     .single()
 
   if (error) {
-    console.error('Error fetching perfume by slug:', error)
-    return null
+    if (error.code === 'PGRST116') return null
+    throw new Error(`Error cargando el perfume: ${error.message}`)
   }
 
   return normalizePerfume(data)
@@ -98,19 +70,13 @@ export async function getPerfumeBySlug(slug) {
 export async function getPerfumeById(id) {
   const { data, error } = await supabase
     .from('perfumes')
-    .select(`
-      *,
-      category:categories(id, name, slug),
-      discount:discounts!perfumes_discount_id_fkey(id, name, discount_type, discount_value, active, start_date, end_date),
-      status:status(id, name, color),
-      images(id, cloudflare_image_id, image_url, alt, is_main, sort_order)
-    `)
+    .select(PERFUME_SELECT)
     .eq('id', id)
     .single()
 
   if (error) {
-    console.error('Error fetching perfume by id:', error)
-    return null
+    if (error.code === 'PGRST116') return null
+    throw new Error(`Error cargando el perfume: ${error.message}`)
   }
 
   return normalizePerfume(data)
@@ -120,24 +86,12 @@ export async function getPerfumeById(id) {
  * Obtiene perfumes de una categoría específica.
  */
 export async function getPerfumesByCategory(categoryId) {
-  const { data, error } = await supabase
+  return getPerfumeList(supabase
     .from('perfumes')
-    .select(`
-      *,
-      category:categories(id, name, slug),
-      discount:discounts!perfumes_discount_id_fkey(id, name, discount_type, discount_value, active, start_date, end_date),
-      images(id, cloudflare_image_id, image_url, alt, is_main, sort_order)
-    `)
+    .select(PERFUME_SELECT)
     .eq('is_active', true)
     .eq('category_id', categoryId)
-    .order('created_at', { ascending: false })
-
-  if (error) {
-    console.error('Error fetching perfumes by category:', error)
-    return []
-  }
-
-  return data.map(normalizePerfume)
+    .order('created_at', { ascending: false }), 'los perfumes de la categoría')
 }
 
 /**

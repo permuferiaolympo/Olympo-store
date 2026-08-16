@@ -6,7 +6,7 @@ import About from '../pages/About/About.jsx'
 import Contact from '../pages/Contact/Contact.jsx'
 import Cart from '../pages/Cart/Cart.jsx'
 import Catalog from '../pages/Catalog/Catalog.jsx'
-import Dashbard from '../pages/Dashbard/Dashbard.jsx'
+import Dashboard from '../pages/Dashbard/Dashbard.jsx'
 import CreateProduct from '../pages/CreateProduct/CreateProduct.jsx'
 import Admin from '../pages/Admin/Admin.jsx'
 import ProtectedRoute from './ProtectedRoute.jsx'
@@ -29,7 +29,7 @@ function AppRoutes() {
 
         {/* Rutas Protegidas (Requieren Login Admin) */}
         <Route element={<ProtectedRoute />}>
-          <Route path="dashboard" element={<Dashbard />} />
+          <Route path="dashboard" element={<Dashboard />} />
           <Route path="dashboard/create-product" element={<CreateProduct />} />
           <Route path="dashboard/edit-product/:id" element={<CreateProduct />} />
         </Route>

@@ -15,7 +15,6 @@ function userHasAdminRole(user) {
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
-  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false)
 
   useEffect(() => {
     // Consulta el usuario en Supabase para no conservar metadata de rol obsoleta
@@ -38,17 +37,11 @@ export function AuthProvider({ children }) {
     return () => subscription.unsubscribe()
   }, [])
 
-  const openLoginModal = () => setIsLoginModalOpen(true)
-  const closeLoginModal = () => setIsLoginModalOpen(false)
-
   const value = {
     user,
     loading,
     isAuthenticated: !!user,
     isAdmin: userHasAdminRole(user),
-    isLoginModalOpen,
-    openLoginModal,
-    closeLoginModal,
   }
 
   return (

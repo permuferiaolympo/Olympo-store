@@ -20,10 +20,11 @@ import {
 import SectionHeader from '../../components/common/SectionHeader.jsx'
 import { getAllPerfumesAdmin, deletePerfume } from '../../services/perfumeService.js'
 import { formatCopCurrency } from '../../lib/currency.js'
+import { getEffectivePrice } from '../../lib/pricing.js'
 
 const ITEMS_PER_PAGE = 10
 
-function Dashbard() {
+function Dashboard() {
   const [products, setProducts] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -432,7 +433,7 @@ function Dashbard() {
                         {product.discount > 0 ? (
                           <>
                             <span className="text-sm font-semibold text-white">
-                              {formatCopCurrency(product.price * (1 - product.discount / 100))}
+                              {formatCopCurrency(getEffectivePrice(product))}
                             </span>
                             <span className="text-xs text-white/30 line-through">
                               {formatCopCurrency(product.price)}
@@ -680,4 +681,4 @@ function Dashbard() {
   )
 }
 
-export default Dashbard
+export default Dashboard

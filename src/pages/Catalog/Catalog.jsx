@@ -10,6 +10,7 @@ const ITEMS_PER_PAGE = 10
 function Catalog() {
   const [products, setProducts] = useState([])
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
   const [search, setSearch] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
 
@@ -20,6 +21,7 @@ function Catalog() {
         setProducts(data)
       } catch (error) {
         console.error('Error loading catalog:', error)
+        setError('No fue posible cargar el catálogo. Intenta nuevamente más tarde.')
       } finally {
         setLoading(false)
       }
@@ -92,6 +94,10 @@ function Catalog() {
       {loading ? (
         <div className="flex min-h-[40vh] items-center justify-center">
           <div className="h-10 w-10 animate-spin rounded-full border-2 border-[#D4AF37] border-t-transparent" />
+        </div>
+      ) : error ? (
+        <div className="rounded-[2rem] border border-red-500/20 bg-red-500/5 p-10 text-center text-white/70">
+          <p className="text-lg text-white">{error}</p>
         </div>
       ) : filteredProducts.length > 0 ? (
         <div className="space-y-10">

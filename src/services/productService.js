@@ -166,37 +166,6 @@ export async function updateProduct(productId, productData) {
 }
 
 /**
- * Guarda el registro de una imagen en la tabla 'images' de Supabase
- * @param {Object} imageData 
- */
-export async function saveProductImage({ perfume_id, image_url, cloudflare_image_id, is_main = false, sort_order = 0, alt = '' }) {
-  // Extraer nombre del archivo de la URL o usar el ID proveído para no violar la restricción NOT NULL
-  const imageId = cloudflare_image_id || image_url.split('/').pop() || `img_${Date.now()}`
-
-  const { data, error } = await supabase
-    .from('images')
-    .insert([
-      {
-        perfume_id,
-        image_url,
-        cloudflare_image_id: imageId,
-        is_main,
-        sort_order,
-        alt: alt || 'Imagen de producto',
-      },
-    ])
-    .select()
-    .single()
-
-  if (error) {
-    console.error('Error al guardar la imagen en Supabase:', error)
-    throw new Error(`Error guardando imagen: ${error.message}`)
-  }
-
-  return data
-}
-
-/**
  * Sincroniza la galería persistida con la galería enviada desde el formulario.
  * Conserva los registros que siguen vigentes, actualiza su orden y elimina tanto
  * los registros como los archivos remotos que ya no pertenecen al producto.

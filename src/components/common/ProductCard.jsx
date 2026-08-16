@@ -4,16 +4,15 @@ import { FiShoppingBag } from 'react-icons/fi'
 import toast from 'react-hot-toast'
 import { useCart } from '../../context/CartContext.jsx'
 import { formatCopCurrency } from '../../lib/currency.js'
+import { getDiscountPercentage, getEffectivePrice } from '../../lib/pricing.js'
 
 function ProductCard({ product }) {
   const { addItem } = useCart()
 
   const basePrice = Number(product.price) || 0
-  const discountPercent = Math.max(0, Number(product.discount) || 0)
+  const discountPercent = getDiscountPercentage(product)
   const hasDiscount = discountPercent > 0
-  const discountedPrice = hasDiscount
-    ? basePrice - (basePrice * discountPercent) / 100
-    : basePrice
+  const discountedPrice = getEffectivePrice(product)
   const imageSrc = product.image && typeof product.image === 'string' && product.image.trim()
     ? product.image
     : 'data:image/svg+xml;charset=UTF-8,%3Csvg xmlns="http://www.w3.org/2000/svg" width="600" height="600" viewBox="0 0 600 600"%3E%3Crect width="600" height="600" fill="%23111111"/%3E%3Ctext x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle" font-size="32" fill="%23D4AF37"%3EImagen no disponible%3C/text%3E%3C/svg%3E'

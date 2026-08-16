@@ -181,10 +181,8 @@ export default function CreateProduct() {
   const [categories, setCategories] = useState([])
   const [loadingCategories, setLoadingCategories] = useState(true)
 
-  // Imágenes: 3 slots (principal + 2 adicionales)
-  const [mainImage, setMainImage] = useState(null)    // string URL o null
-  const [extraImage1, setExtraImage1] = useState(null) // string URL o null
-  const [extraImage2, setExtraImage2] = useState(null) // string URL o null
+  // Imágenes: principal y dos adicionales, conservadas en el orden de la galería.
+  const [images, setImages] = useState([null, null, null])
   const { id } = useParams()
   const isEditMode = Boolean(id)
   const [currentDiscountId, setCurrentDiscountId] = useState(null)
@@ -256,9 +254,7 @@ export default function CreateProduct() {
         })
 
         setCurrentDiscountId(product.discountRaw?.id ?? null)
-        setMainImage(product.image || null)
-        setExtraImage1(product.gallery?.[1] || null)
-        setExtraImage2(product.gallery?.[2] || null)
+        setImages([product.image || null, product.gallery?.[1] || null, product.gallery?.[2] || null])
       } catch (err) {
         console.error(err)
         toast.error('Error cargando datos del producto a editar')
@@ -279,20 +275,12 @@ export default function CreateProduct() {
     }))
   }
 
-  const handleImageUpload = (slot, url) => {
-    if (slot === 'main') setMainImage(url)
-    if (slot === 'extra1') setExtraImage1(url)
-    if (slot === 'extra2') setExtraImage2(url)
-  }
-
-  const handleImageRemove = (slot) => {
-    if (slot === 'main') setMainImage(null)
-    if (slot === 'extra1') setExtraImage1(null)
-    if (slot === 'extra2') setExtraImage2(null)
+  const setImageAt = (index, url) => {
+    setImages((current) => current.map((image, imageIndex) => (imageIndex === index ? url : image)))
   }
 
   // Contar cuántas imágenes hay
-  const imageCount = [mainImage, extraImage1, extraImage2].filter(Boolean).length
+  const imageCount = images.filter(Boolean).length
 
   // Enviar formulario
   const handleSubmit = async (e) => {
@@ -388,11 +376,13 @@ export default function CreateProduct() {
         ? await updateProduct(id, finalPayload)
         : await createProduct(finalPayload)
 
-      await syncProductImages(perfume.id, [
-        mainImage && { url: mainImage, is_main: true, alt: `${perfume.name} - Principal` },
-        extraImage1 && { url: extraImage1, is_main: false, alt: `${perfume.name} - Adicional 1` },
-        extraImage2 && { url: extraImage2, is_main: false, alt: `${perfume.name} - Adicional 2` },
-      ].filter(Boolean))
+      await syncProductImages(perfume.id, images
+        .map((url, index) => url && ({
+          url,
+          is_main: index === 0,
+          alt: `${perfume.name} - ${index === 0 ? 'Principal' : `Adicional ${index}`}`,
+        }))
+        .filter(Boolean))
 
       toast.success(isEditMode ? '¡Producto actualizado exitosamente!' : '¡Producto creado exitosamente!', { id: saveToast })
       navigate('/dashboard')
@@ -736,9 +726,9 @@ export default function CreateProduct() {
               <ImageSlot
                 label="Imagen Principal"
                 sublabel="Requerida"
-                image={mainImage}
-                onUpload={(url) => handleImageUpload('main', url)}
-                onRemove={() => handleImageRemove('main')}
+                image={images[0]}
+                onUpload={(url) => setImageAt(0, url)}
+                onRemove={() => setImageAt(0, null)}
                 isMain={true}
                 large={true}
               />
@@ -748,18 +738,18 @@ export default function CreateProduct() {
                 <ImageSlot
                   label="Adicional 1"
                   sublabel="Opcional"
-                  image={extraImage1}
-                  onUpload={(url) => handleImageUpload('extra1', url)}
-                  onRemove={() => handleImageRemove('extra1')}
+                  image={images[1]}
+                  onUpload={(url) => setImageAt(1, url)}
+                  onRemove={() => setImageAt(1, null)}
                   isMain={false}
                   large={false}
                 />
                 <ImageSlot
                   label="Adicional 2"
                   sublabel="Opcional"
-                  image={extraImage2}
-                  onUpload={(url) => handleImageUpload('extra2', url)}
-                  onRemove={() => handleImageRemove('extra2')}
+                  image={images[2]}
+                  onUpload={(url) => setImageAt(2, url)}
+                  onRemove={() => setImageAt(2, null)}
                   isMain={false}
                   large={false}
                 />
