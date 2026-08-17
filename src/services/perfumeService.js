@@ -218,7 +218,6 @@ function normalizePerfume(raw) {
     name: raw.name,
     brand: raw.brand,
     description: raw.description,
-    characteristics: raw.characteristics,
     price: Number(raw.price),
     stock: raw.stock,
     featured: raw.featured,

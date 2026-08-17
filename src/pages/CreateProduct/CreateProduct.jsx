@@ -166,7 +166,6 @@ export default function CreateProduct() {
     manual_end_date: '',
     manual_discount_active: true,
     description: '',
-    characteristics: '',
     usage_day: '',
     usage_night: '',
     usage_autumn: '',
@@ -242,7 +241,6 @@ export default function CreateProduct() {
             : '',
           manual_discount_active: product.discountRaw?.active ?? true,
           description: product.description || '',
-          characteristics: product.characteristics || '',
           usage_day: usageData.day ?? '',
           usage_night: usageData.night ?? '',
           usage_autumn: usageData.autumn ?? '',
@@ -628,21 +626,6 @@ export default function CreateProduct() {
                   rows={4}
                   placeholder="Una fragancia cautivadora que combina notas amaderadas y especias orientales..."
                   value={formData.description}
-                  onChange={handleChange}
-                  className="w-full rounded-2xl border border-white/10 bg-white/5 px-5 py-4 text-white outline-none transition focus:border-[#D4AF37]/60 focus:ring-2 focus:ring-[#D4AF37]/20"
-                />
-              </div>
-
-              {/* Características / Olfativas */}
-              <div>
-                <label className="mb-2 block text-xs uppercase tracking-[0.25em] text-[#D4AF37]">
-                  Notas Olfativas / Características
-                </label>
-                <textarea
-                  name="characteristics"
-                  rows={3}
-                  placeholder="Notas de salida: Bergamota. Notas de corazón: Ámbar. Notas de fondo: Cedro."
-                  value={formData.characteristics}
                   onChange={handleChange}
                   className="w-full rounded-2xl border border-white/10 bg-white/5 px-5 py-4 text-white outline-none transition focus:border-[#D4AF37]/60 focus:ring-2 focus:ring-[#D4AF37]/20"
                 />

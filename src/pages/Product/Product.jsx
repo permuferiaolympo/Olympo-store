@@ -195,13 +195,6 @@ function Product() {
               </div>
             )}
 
-            {/* Características */}
-            {product.characteristics && (
-              <div className="space-y-2 pt-2 border-t border-white/10">
-                <p className="text-xs uppercase tracking-[0.3em] text-[#D4AF37]/70 font-semibold">Notas Olfativas / Características</p>
-                <p className="text-sm leading-7 text-white/80">{product.characteristics}</p>
-              </div>
-            )}
           </div>
 
           <div className="space-y-6 pt-4 border-t border-white/10">
