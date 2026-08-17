@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { FiShoppingBag, FiCloudSnow, FiUmbrella, FiWind, FiSunrise, FiSun, FiMoon, FiStar } from 'react-icons/fi'
+import { FiArrowLeft, FiCheckCircle, FiShoppingBag, FiCloudSnow, FiUmbrella, FiWind, FiSunrise, FiSun, FiMoon, FiStar } from 'react-icons/fi'
 import toast from 'react-hot-toast'
 import SectionHeader from '../../components/common/SectionHeader.jsx'
 import { useCart } from '../../context/CartContext.jsx'
@@ -92,28 +92,39 @@ function Product() {
 
   return (
     <div className="space-y-8 sm:space-y-12">
-      <SectionHeader
-        pretitle="Detalle del perfume"
-        title={product.name}
-        children={product.description}
-      />
+      <div className="space-y-5">
+        <Link
+          to="/catalog"
+          className="inline-flex items-center gap-2 text-xs uppercase tracking-[0.2em] text-white/60 transition hover:text-[#D4AF37]"
+        >
+          <FiArrowLeft size={15} /> Volver al catálogo
+        </Link>
+        <SectionHeader pretitle="Detalle del perfume" title={product.name}>
+          Conoce todos los detalles de esta fragancia y elige la cantidad ideal para tu pedido.
+        </SectionHeader>
+      </div>
 
       <div className="grid gap-5 sm:gap-8 lg:grid-cols-12 lg:items-start">
         {/* Columna de Galería / Imagen (5 cols) */}
         <div className="space-y-4 lg:col-span-5 lg:sticky lg:top-24">
-          <div className="overflow-hidden rounded-[1.75rem] border border-white/10 bg-gradient-to-b from-white/10 to-black/60 p-3 sm:rounded-[2.5rem] sm:p-6 shadow-[0_40px_120px_-80px_rgba(0,0,0,0.8)]">
+          <div className="overflow-hidden rounded-[1.75rem] border border-white/10 bg-[radial-gradient(circle_at_top,_rgba(212,175,55,0.14),_rgba(0,0,0,0.7)_62%)] p-3 sm:rounded-[2.5rem] sm:p-6 shadow-[0_40px_120px_-80px_rgba(0,0,0,0.8)]">
             {hasGallery ? (
               <div className="relative flex h-[260px] w-full items-center justify-center sm:h-[380px]">
                 <img
                   src={currentImage}
                   alt={`${product.name} - Imagen ${selectedImageIndex + 1}`}
-                  className="h-full w-full object-contain rounded-2xl transition-all duration-300"
+                  className="h-full w-full rounded-2xl object-contain p-2 transition-all duration-300 hover:scale-[1.02]"
                 />
                 {product.images?.[selectedImageIndex]?.is_main && (
                   <div className="absolute left-3 top-3 flex items-center gap-1.5 rounded-full bg-[#D4AF37] px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-black shadow-md">
                     <FiStar size={11} className="fill-black" />
                     Principal
                   </div>
+                )}
+                {product.gallery.length > 1 && (
+                  <span className="absolute bottom-2 right-2 rounded-full border border-white/10 bg-black/50 px-3 py-1.5 text-[10px] uppercase tracking-[0.2em] text-white/70 backdrop-blur-sm">
+                    {selectedImageIndex + 1} / {product.gallery.length}
+                  </span>
                 )}
               </div>
             ) : (
@@ -155,15 +166,21 @@ function Product() {
 
         {/* Columna de Información del Producto (7 cols) */}
         <div className="space-y-6 rounded-[1.75rem] border border-white/10 bg-white/5 p-5 sm:space-y-8 sm:rounded-[2.5rem] sm:p-10 shadow-[0_40px_120px_-80px_rgba(0,0,0,0.8)] lg:col-span-7">
-          <div className="space-y-5">
-            {product.brand && (
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            {product.brand ? (
               <div className="inline-flex max-w-full items-center gap-3 rounded-full border border-[#D4AF37]/20 bg-[#D4AF37]/10 px-4 py-2 text-[10px] uppercase tracking-[0.2em] text-[#D4AF37]/90 sm:text-xs sm:tracking-[0.35em]">
                 {product.brand}
               </div>
-            )}
+            ) : <span />}
+            <span className={`inline-flex items-center gap-2 rounded-full px-3 py-2 text-[10px] font-semibold uppercase tracking-[0.16em] ${product.stock > 0 ? 'bg-emerald-400/10 text-emerald-300' : 'bg-red-500/10 text-red-300'}`}>
+              <FiCheckCircle size={13} /> {product.stock > 0 ? 'Disponible' : 'Agotado'}
+            </span>
+          </div>
+
+          <div className="space-y-5">
 
             {/* Precio */}
-            <div className="space-y-1">
+            <div className="rounded-[1.5rem] border border-white/10 bg-black/30 p-5 sm:p-6">
               <div className="flex items-center gap-3">
                 <p className="text-xs uppercase tracking-[0.3em] text-[#D4AF37]/70 font-semibold">Precio</p>
                 {hasDiscount && (
@@ -179,22 +196,25 @@ function Product() {
                 )}
               </div>
               {product.stock !== undefined && (
-                <p className="pt-1 text-xs uppercase tracking-[0.25em] text-white/50">
+                <p className="pt-2 text-xs uppercase tracking-[0.2em] text-white/50 sm:tracking-[0.25em]">
                   {product.stock > 0 ? `${product.stock} unidades en stock` : 'Agotado'}
                 </p>
               )}
             </div>
 
-            {/* Categoría */}
-            {product.category && (
-              <div className="space-y-1">
-                <p className="text-xs uppercase tracking-[0.3em] text-[#D4AF37]/70 font-semibold">Categoría</p>
-                <span className="inline-block rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs uppercase tracking-[0.25em] text-white/70">
-                  {product.category.name}
-                </span>
+            <div className="rounded-[1.5rem] border border-white/10 bg-white/[0.03] p-5 sm:p-6">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#D4AF37]/80">Descripción</p>
+                {product.category && (
+                  <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-[10px] uppercase tracking-[0.18em] text-white/65">
+                    {product.category.name}
+                  </span>
+                )}
               </div>
-            )}
-
+              <p className="mt-4 text-sm leading-7 text-white/75 sm:text-base sm:leading-8">
+                {product.description || 'La descripción de esta fragancia estará disponible próximamente.'}
+              </p>
+            </div>
           </div>
 
           <div className="space-y-6 pt-4 border-t border-white/10">
@@ -239,8 +259,8 @@ function Product() {
             )}
 
             <div className="grid gap-4 sm:grid-cols-[1fr_auto] sm:items-end">
-              <div className="flex items-center gap-3 rounded-3xl border border-white/10 bg-black/40 px-4 py-3">
-                <label className="text-xs uppercase tracking-[0.25em] text-white/60">Cantidad</label>
+              <div className="flex items-center justify-between gap-3 rounded-3xl border border-white/10 bg-black/40 px-4 py-3">
+                <label className="text-xs uppercase tracking-[0.18em] text-white/60 sm:tracking-[0.25em]">Cantidad</label>
                 <input
                   type="number"
                   min="1"
@@ -248,22 +268,23 @@ function Product() {
                   value={quantity}
                   onChange={(e) => setQuantity(Math.max(1, Number(e.target.value) || 1))}
                   className="w-20 rounded-2xl border border-white/10 bg-white/5 px-3 py-2 text-center text-white outline-none transition focus:border-[#D4AF37]/60 focus:ring-2 focus:ring-[#D4AF37]/20"
+                  aria-label="Cantidad del producto"
                 />
               </div>
               <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
                 <button
                   type="button"
                   onClick={handleAddToCart}
-                  className="w-full sm:w-auto flex-1 inline-flex items-center justify-center gap-3 rounded-full bg-gradient-to-r from-[#D4AF37] to-[#AA7C11] px-8 py-4 text-xs font-semibold uppercase tracking-[0.28em] text-black shadow-[0_0_30px_rgba(212,175,55,0.2)] transition hover:brightness-110 active:scale-[0.99] disabled:opacity-50"
+                  className="inline-flex w-full flex-1 items-center justify-center gap-3 rounded-full bg-gradient-to-r from-[#D4AF37] to-[#AA7C11] px-6 py-4 text-xs font-semibold uppercase tracking-[0.2em] text-black shadow-[0_0_30px_rgba(212,175,55,0.2)] transition hover:brightness-110 active:scale-[0.99] disabled:opacity-50 sm:w-auto sm:px-8 sm:tracking-[0.28em]"
                   disabled={product.stock <= 0}
                 >
                   <FiShoppingBag size={18} /> {product.stock > 0 ? 'Agregar al carrito' : 'Agotado'}
                 </button>
                 <Link
-                  to="/"
+                  to="/catalog"
                   className="text-center text-xs uppercase tracking-[0.2em] text-white/60 transition hover:text-[#D4AF37] sm:text-left sm:tracking-[0.25em]"
                 >
-                  Volver al inicio
+                  Seguir explorando
                 </Link>
               </div>
             </div>
@@ -273,11 +294,9 @@ function Product() {
 
       {related.length > 0 && (
         <section className="space-y-6 pt-4 sm:space-y-8 sm:pt-8">
-          <SectionHeader
-            pretitle="También te puede interesar"
-            title="Perfumes relacionados"
-            children="Sugerencias cuidadas basadas en la intensidad y el carácter de tu elección."
-          />
+          <SectionHeader pretitle="También te puede interesar" title="Perfumes relacionados">
+            Sugerencias cuidadas basadas en la categoría de tu elección.
+          </SectionHeader>
           <div className="grid gap-5 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
             {related.slice(0, 3).map((item) => (
               <Link key={item.id} to={`/product/${item.slug}`} className="group">
