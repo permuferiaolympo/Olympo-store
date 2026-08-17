@@ -68,8 +68,8 @@ function Catalog() {
   }
 
   return (
-    <div className="space-y-10">
-      <section className="rounded-[2rem] border border-white/10 bg-[linear-gradient(135deg,_rgba(212,175,55,0.14),_rgba(0,0,0,0.25))] p-6 shadow-[0_30px_90px_-60px_rgba(0,0,0,0.95)] sm:p-8 lg:p-10">
+    <div className="space-y-8 sm:space-y-10">
+      <section className="rounded-[1.5rem] border border-white/10 bg-[linear-gradient(135deg,_rgba(212,175,55,0.14),_rgba(0,0,0,0.25))] p-5 shadow-[0_30px_90px_-60px_rgba(0,0,0,0.95)] sm:rounded-[2rem] sm:p-8 lg:p-10">
         <SectionHeader
           pretitle="Catálogo completo"
           title="Explora nuestra colección"
@@ -85,8 +85,8 @@ function Catalog() {
             type="text"
             value={search}
             onChange={(event) => setSearch(event.target.value)}
-            placeholder="Busca por nombre, marca o nota"
-            className="w-full rounded-full border border-white/10 bg-black/40 px-4 py-3 text-sm text-white outline-none ring-0 transition focus:border-[#D4AF37]/50"
+            placeholder="Busca por nombre, marca o descripción"
+            className="w-full rounded-2xl border border-white/10 bg-black/40 px-4 py-3 text-sm text-white outline-none ring-0 transition focus:border-[#D4AF37]/50 sm:rounded-full"
           />
         </div>
       </section>
@@ -106,7 +106,7 @@ function Catalog() {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.35 }}
-            className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+            className="grid grid-cols-1 gap-5 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3 xl:grid-cols-4"
           >
             {paginatedProducts.map((product) => (
               <ProductCard key={product.id} product={product} />
@@ -115,12 +115,12 @@ function Catalog() {
 
           {/* Controls bar & Pagination buttons */}
           {totalPages > 1 && (
-            <div className="flex flex-col items-center gap-4 rounded-3xl border border-white/10 bg-white/5 p-6 backdrop-blur-md sm:flex-row sm:justify-between">
-              <p className="text-xs uppercase tracking-[0.2em] text-white/50">
+            <div className="flex flex-col items-center gap-4 rounded-3xl border border-white/10 bg-white/5 p-4 text-center backdrop-blur-md sm:flex-row sm:justify-between sm:p-6 sm:text-left">
+              <p className="text-xs uppercase tracking-[0.16em] text-white/50 sm:tracking-[0.2em]">
                 Mostrando {((currentPage - 1) * ITEMS_PER_PAGE) + 1}–{Math.min(currentPage * ITEMS_PER_PAGE, filteredProducts.length)} de {filteredProducts.length} productos
               </p>
 
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center justify-center gap-2">
                 <button
                   type="button"
                   onClick={() => handlePageChange(Math.max(1, currentPage - 1))}

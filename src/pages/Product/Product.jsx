@@ -91,19 +91,19 @@ function Product() {
   }
 
   return (
-    <div className="space-y-12">
+    <div className="space-y-8 sm:space-y-12">
       <SectionHeader
         pretitle="Detalle del perfume"
         title={product.name}
         children={product.description}
       />
 
-      <div className="grid gap-8 lg:grid-cols-12 lg:items-start">
+      <div className="grid gap-5 sm:gap-8 lg:grid-cols-12 lg:items-start">
         {/* Columna de Galería / Imagen (5 cols) */}
         <div className="space-y-4 lg:col-span-5 lg:sticky lg:top-24">
-          <div className="overflow-hidden rounded-[2.5rem] border border-white/10 bg-gradient-to-b from-white/10 to-black/60 p-4 sm:p-6 shadow-[0_40px_120px_-80px_rgba(0,0,0,0.8)]">
+          <div className="overflow-hidden rounded-[1.75rem] border border-white/10 bg-gradient-to-b from-white/10 to-black/60 p-3 sm:rounded-[2.5rem] sm:p-6 shadow-[0_40px_120px_-80px_rgba(0,0,0,0.8)]">
             {hasGallery ? (
-              <div className="relative flex h-[320px] sm:h-[380px] w-full items-center justify-center">
+              <div className="relative flex h-[260px] w-full items-center justify-center sm:h-[380px]">
                 <img
                   src={currentImage}
                   alt={`${product.name} - Imagen ${selectedImageIndex + 1}`}
@@ -117,7 +117,7 @@ function Product() {
                 )}
               </div>
             ) : (
-              <div className="flex h-[320px] sm:h-[380px] items-center justify-center rounded-[2rem] bg-white/5">
+              <div className="flex h-[260px] items-center justify-center rounded-[1.5rem] bg-white/5 sm:h-[380px] sm:rounded-[2rem]">
                 <p className="text-white/40">Sin imágenes disponibles</p>
               </div>
             )}
@@ -125,13 +125,13 @@ function Product() {
 
           {/* Selector de Miniaturas (Thumbnails) */}
           {hasGallery && product.gallery.length > 1 && (
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-3 gap-2 sm:gap-3">
               {product.gallery.map((imgUrl, idx) => (
                 <button
                   key={`${product.id}-thumb-${idx}`}
                   type="button"
                   onClick={() => setSelectedImageIndex(idx)}
-                  className={`group relative h-24 overflow-hidden rounded-2xl border transition-all duration-300 ${
+                  className={`group relative h-20 overflow-hidden rounded-xl border transition-all duration-300 sm:h-24 sm:rounded-2xl ${
                     selectedImageIndex === idx
                       ? 'border-[#D4AF37] bg-[#D4AF37]/10 ring-2 ring-[#D4AF37]/40 scale-[1.02]'
                       : 'border-white/10 bg-black/40 hover:border-white/30 opacity-70 hover:opacity-100'
@@ -154,10 +154,10 @@ function Product() {
         </div>
 
         {/* Columna de Información del Producto (7 cols) */}
-        <div className="space-y-8 rounded-[2.5rem] border border-white/10 bg-white/5 p-6 sm:p-10 shadow-[0_40px_120px_-80px_rgba(0,0,0,0.8)] lg:col-span-7">
+        <div className="space-y-6 rounded-[1.75rem] border border-white/10 bg-white/5 p-5 sm:space-y-8 sm:rounded-[2.5rem] sm:p-10 shadow-[0_40px_120px_-80px_rgba(0,0,0,0.8)] lg:col-span-7">
           <div className="space-y-5">
             {product.brand && (
-              <div className="inline-flex items-center gap-3 rounded-full border border-[#D4AF37]/20 bg-[#D4AF37]/10 px-4 py-2 text-xs uppercase tracking-[0.35em] text-[#D4AF37]/90">
+              <div className="inline-flex max-w-full items-center gap-3 rounded-full border border-[#D4AF37]/20 bg-[#D4AF37]/10 px-4 py-2 text-[10px] uppercase tracking-[0.2em] text-[#D4AF37]/90 sm:text-xs sm:tracking-[0.35em]">
                 {product.brand}
               </div>
             )}
@@ -172,8 +172,8 @@ function Product() {
                   </span>
                 )}
               </div>
-              <div className="flex items-baseline gap-4">
-                <span className="text-4xl font-bold text-white">{formatCopCurrency(discountedPrice)}</span>
+              <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1">
+                <span className="text-3xl font-bold text-white sm:text-4xl">{formatCopCurrency(discountedPrice)}</span>
                 {hasDiscount && (
                   <span className="text-base line-through text-white/40">{formatCopCurrency(product.price)}</span>
                 )}
@@ -205,7 +205,7 @@ function Product() {
                   <p className="text-xs text-white/60">Intensidad y momentos del día.</p>
                 </div>
 
-                <div className="mt-3 grid grid-cols-3 gap-3 sm:grid-cols-6">
+                <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
                   {[
                     { key: 'winter', label: 'Invierno', icon: FiCloudSnow, color: 'from-sky-400 to-blue-600' },
                     { key: 'spring', label: 'Primavera', icon: FiSunrise, color: 'from-emerald-400 to-lime-500' },
@@ -250,7 +250,7 @@ function Product() {
                   className="w-20 rounded-2xl border border-white/10 bg-white/5 px-3 py-2 text-center text-white outline-none transition focus:border-[#D4AF37]/60 focus:ring-2 focus:ring-[#D4AF37]/20"
                 />
               </div>
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
                 <button
                   type="button"
                   onClick={handleAddToCart}
@@ -261,7 +261,7 @@ function Product() {
                 </button>
                 <Link
                   to="/"
-                  className="text-xs uppercase tracking-[0.25em] text-white/60 transition hover:text-[#D4AF37]"
+                  className="text-center text-xs uppercase tracking-[0.2em] text-white/60 transition hover:text-[#D4AF37] sm:text-left sm:tracking-[0.25em]"
                 >
                   Volver al inicio
                 </Link>
@@ -272,20 +272,20 @@ function Product() {
       </div>
 
       {related.length > 0 && (
-        <section className="space-y-8 pt-8">
+        <section className="space-y-6 pt-4 sm:space-y-8 sm:pt-8">
           <SectionHeader
             pretitle="También te puede interesar"
             title="Perfumes relacionados"
             children="Sugerencias cuidadas basadas en la intensidad y el carácter de tu elección."
           />
-          <div className="grid gap-6 lg:grid-cols-3">
+          <div className="grid gap-5 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
             {related.slice(0, 3).map((item) => (
               <Link key={item.id} to={`/product/${item.slug}`} className="group">
-                <div className="rounded-[2rem] border border-white/10 bg-white/5 p-6 text-white transition group-hover:border-[#D4AF37]/20">
+                <div className="rounded-[1.5rem] border border-white/10 bg-white/5 p-5 text-white transition group-hover:border-[#D4AF37]/20 sm:rounded-[2rem] sm:p-6">
                   {item.image && (
                     <img src={item.image} alt={item.name} className="mb-5 h-56 w-full rounded-[1.75rem] object-contain bg-black/30 p-2" />
                   )}
-                  <h3 className="mb-3 text-xl font-[TrajanPro] uppercase tracking-[0.14em] text-white">{item.name}</h3>
+                  <h3 className="mb-3 line-clamp-2 text-lg font-[TrajanPro] uppercase tracking-[0.1em] text-white sm:text-xl sm:tracking-[0.14em]">{item.name}</h3>
                   <p className="text-xs leading-6 text-white/70 line-clamp-2">{item.description}</p>
                 </div>
               </Link>
