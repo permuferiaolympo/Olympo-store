@@ -9,6 +9,7 @@ import Catalog from '../pages/Catalog/Catalog.jsx'
 import Dashboard from '../pages/Dashbard/Dashbard.jsx'
 import CreateProduct from '../pages/CreateProduct/CreateProduct.jsx'
 import Admin from '../pages/Admin/Admin.jsx'
+import VipConsultation from '../pages/Vip/VipConsultation.jsx'
 import ProtectedRoute from './ProtectedRoute.jsx'
 
 function AppRoutes() {
@@ -21,6 +22,7 @@ function AppRoutes() {
         <Route path="about" element={<About />} />
         <Route path="catalog" element={<Catalog />} />
         <Route path="contact" element={<Contact />} />
+        <Route path="vip" element={<VipConsultation />} />
         <Route path="cart" element={<Cart />} />
 
         {/* Ruta Oculta de Administración */}

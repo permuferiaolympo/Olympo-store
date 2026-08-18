@@ -154,7 +154,7 @@ function Home() {
               <FiArrowRight className="text-base transition-transform duration-300 group-hover:translate-x-1" />
             </Link>
             <Link
-              to="/contact"
+              to="/vip"
               className="inline-flex items-center gap-2.5 rounded-full border border-white/20 bg-white/5 px-8 py-4 text-xs font-semibold uppercase tracking-[0.28em] text-white backdrop-blur-sm transition-all duration-300 hover:border-[#D4AF37]/50 hover:bg-white/10 hover:text-[#D4AF37]"
             >
               <FiCompass className="text-base" />
