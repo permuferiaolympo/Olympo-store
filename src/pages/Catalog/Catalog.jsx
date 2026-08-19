@@ -6,12 +6,26 @@ import ProductCard from '../../components/common/ProductCard.jsx'
 import { getPerfumes } from '../../services/perfumeService.js'
 
 const ITEMS_PER_PAGE = 10
+const CATEGORY_FILTERS = [
+  { value: 'all', label: 'Todos' },
+  { value: 'mujer', label: 'Mujer' },
+  { value: 'hombre', label: 'Hombre' },
+  { value: 'unisex', label: 'Unisex' },
+  { value: 'preparadas', label: 'Preparadas' },
+]
+
+const normalizeCategory = (value) => String(value || '')
+  .normalize('NFD')
+  .replace(/[\u0300-\u036f]/g, '')
+  .toLowerCase()
+  .trim()
 
 function Catalog() {
   const [products, setProducts] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [search, setSearch] = useState('')
+  const [categoryFilter, setCategoryFilter] = useState('all')
   const [currentPage, setCurrentPage] = useState(1)
 
   useEffect(() => {
@@ -30,16 +44,20 @@ function Catalog() {
     fetchProducts()
   }, [])
 
-  // Reset to first page when searching
+  // Reset to first page when searching or changing category
   useEffect(() => {
     setCurrentPage(1)
-  }, [search])
+  }, [search, categoryFilter])
 
   const filteredProducts = useMemo(() => {
     const query = search.trim().toLowerCase()
-    if (!query) return products
 
     return products.filter((product) => {
+      const productCategory = normalizeCategory(product.category?.name)
+      const matchesCategory = categoryFilter === 'all' || productCategory === categoryFilter
+      if (!matchesCategory) return false
+      if (!query) return true
+
       const haystack = [
         product.name,
         product.brand,
@@ -52,7 +70,7 @@ function Catalog() {
 
       return haystack.includes(query)
     })
-  }, [products, search])
+  }, [products, search, categoryFilter])
 
   // Pagination calculation
   const totalPages = Math.max(1, Math.ceil(filteredProducts.length / ITEMS_PER_PAGE))
@@ -70,14 +88,15 @@ function Catalog() {
   return (
     <div className="space-y-8 sm:space-y-10">
       <section className="rounded-[1.5rem] border border-white/10 bg-[linear-gradient(135deg,_rgba(212,175,55,0.14),_rgba(0,0,0,0.25))] p-5 shadow-[0_30px_90px_-60px_rgba(0,0,0,0.95)] sm:rounded-[2rem] sm:p-8 lg:p-10">
-        <SectionHeader
-          pretitle="Catálogo completo"
-          title="Explora nuestra colección"
-          children="Encuentra fragancias premium con una experiencia visual limpia, rápida y adaptada a cualquier dispositivo."
-        />
+        <div className="text-center">
+          <SectionHeader
+            pretitle="Catálogo completo"
+            title="Explora nuestra colección"
+          />
+        </div>
 
         <div className="mt-6">
-          <label htmlFor="catalog-search" className="mb-2 block text-xs uppercase tracking-[0.3em] text-[#D4AF37]/80">
+          <label htmlFor="catalog-search" className="mb-2 block text-center text-xs uppercase tracking-[0.3em] text-[#D4AF37]/80">
             Buscar perfume
           </label>
           <input
@@ -88,6 +107,31 @@ function Catalog() {
             placeholder="Busca por nombre, marca o descripción"
             className="w-full rounded-2xl border border-white/10 bg-black/40 px-4 py-3 text-sm text-white outline-none ring-0 transition focus:border-[#D4AF37]/50 sm:rounded-full"
           />
+        </div>
+
+        <div className="mt-6">
+          <p className="mb-6 text-center text-xs uppercase tracking-[0.3em] text-[#D4AF37]/80">Filtrar por categoría</p>
+          <div className="mx-auto grid max-w-[280px] grid-cols-2 gap-2.5 sm:flex sm:max-w-none sm:flex-wrap sm:justify-center">
+            {CATEGORY_FILTERS.map((filter) => {
+              const isActive = categoryFilter === filter.value
+
+              return (
+                <button
+                  key={filter.value}
+                  type="button"
+                  onClick={() => setCategoryFilter(filter.value)}
+                  aria-pressed={isActive}
+                  className={`rounded-full border px-2 py-2 text-[9px] uppercase tracking-[0.14em] transition sm:px-4 sm:text-[10px] sm:tracking-[0.2em] ${
+                    isActive
+                      ? 'border-[#D4AF37] bg-[#D4AF37] text-black shadow-[0_0_18px_rgba(212,175,55,0.2)]'
+                      : 'border-white/10 bg-white/5 text-white/65 hover:border-[#D4AF37]/50 hover:text-white'
+                  }`}
+                >
+                  {filter.label}
+                </button>
+              )
+            })}
+          </div>
         </div>
       </section>
 
@@ -106,10 +150,10 @@ function Catalog() {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.35 }}
-            className="grid grid-cols-1 gap-5 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3 xl:grid-cols-4"
+            className="grid grid-cols-2 gap-3 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3 xl:grid-cols-4"
           >
             {paginatedProducts.map((product) => (
-              <ProductCard key={product.id} product={product} />
+              <ProductCard key={product.id} product={product} showDescription={false} />
             ))}
           </motion.div>
 

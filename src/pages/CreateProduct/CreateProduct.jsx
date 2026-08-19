@@ -166,6 +166,7 @@ export default function CreateProduct() {
     manual_end_date: '',
     manual_discount_active: true,
     description: '',
+    notes: '',
     usage_day: '',
     usage_night: '',
     usage_autumn: '',
@@ -241,6 +242,7 @@ export default function CreateProduct() {
             : '',
           manual_discount_active: product.discountRaw?.active ?? true,
           description: product.description || '',
+          notes: Array.isArray(product.notes) ? product.notes.join('\n') : '',
           usage_day: usageData.day ?? '',
           usage_night: usageData.night ?? '',
           usage_autumn: usageData.autumn ?? '',
@@ -305,6 +307,7 @@ export default function CreateProduct() {
         usage_spring,
         usage_summer,
         usage_winter,
+        notes,
         ...payloadBase
       } = formData
 
@@ -333,6 +336,11 @@ export default function CreateProduct() {
         const value = Number(usage_winter)
         if (!Number.isNaN(value) && value >= 0) usageData.winter = value
       }
+
+      const notesData = notes
+        .split('\n')
+        .map((note) => note.trim())
+        .filter(Boolean)
 
       let selectedDiscountId = null
       if (formData.discount_mode && formData.manual_discount_value) {
@@ -367,6 +375,7 @@ export default function CreateProduct() {
       const finalPayload = {
         ...payloadBase,
         discount_id: formData.discount_mode ? selectedDiscountId : null,
+        notes: notesData.length > 0 ? notesData : null,
         usage_data: Object.keys(usageData).length > 0 ? usageData : null,
       }
 
@@ -629,6 +638,22 @@ export default function CreateProduct() {
                   onChange={handleChange}
                   className="w-full rounded-2xl border border-white/10 bg-white/5 px-5 py-4 text-white outline-none transition focus:border-[#D4AF37]/60 focus:ring-2 focus:ring-[#D4AF37]/20"
                 />
+              </div>
+
+              {/* Notas olfativas */}
+              <div>
+                <label className="mb-2 block text-xs uppercase tracking-[0.25em] text-[#D4AF37]">
+                  Notas olfativas
+                </label>
+                <textarea
+                  name="notes"
+                  rows={4}
+                  placeholder={'Salida: bergamota\nCorazón: jazmín\nFondo: sándalo'}
+                  value={formData.notes}
+                  onChange={handleChange}
+                  className="w-full rounded-2xl border border-white/10 bg-white/5 px-5 py-4 text-white outline-none transition focus:border-[#D4AF37]/60 focus:ring-2 focus:ring-[#D4AF37]/20"
+                />
+                <p className="mt-2 text-xs text-white/50">Escribe una nota por línea.</p>
               </div>
 
               {/* Uso recomendado */}

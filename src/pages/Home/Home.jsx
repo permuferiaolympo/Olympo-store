@@ -61,7 +61,7 @@ function Home() {
   useEffect(() => {
     function updateVisibleCount() {
       if (window.innerWidth < 640) {
-        setVisibleCount(1)
+        setVisibleCount(2)
       } else if (window.innerWidth < 1024) {
         setVisibleCount(2)
       } else if (window.innerWidth < 1280) {
@@ -162,35 +162,51 @@ function Home() {
             </Link>
           </div>
 
-          {/* Hero Trust Indicators Bar */}
-          <div className="mt-14 grid grid-cols-2 gap-4 border-t border-white/10 pt-10 sm:grid-cols-4 sm:gap-6">
-            <div className="flex flex-col items-center space-y-1.5 p-2">
-              <FiTruck className="h-6 w-6 text-[#D4AF37]" />
-              <span className="text-xs font-medium uppercase tracking-[0.18em] text-white/90">Envío Rápido</span>
-              <span className="text-[11px] text-white/50">Empaque Protegido</span>
-            </div>
-            <div className="flex flex-col items-center space-y-1.5 p-2">
-              <FiAward className="h-6 w-6 text-[#D4AF37]" />
-              <span className="text-xs font-medium uppercase tracking-[0.18em] text-white/90">Calidad Premium</span>
-              <span className="text-[11px] text-white/50">Fijación Prolongada</span>
-            </div>
-            <div className="flex flex-col items-center space-y-1.5 p-2">
-              <FiStar className="h-6 w-6 text-[#D4AF37]" />
-              <span className="text-xs font-medium uppercase tracking-[0.18em] text-white/90">Atención VIP</span>
-              <span className="text-[11px] text-white/50">Asesoría Directa</span>
-            </div>
-          </div>
+{/* Hero Trust Indicators Bar */}
+<div className="mt-14 grid grid-cols-2 justify-items-center gap-4 border-t border-white/10 pt-10 sm:grid-cols-3 sm:gap-6">
+  <div className="flex flex-col items-center space-y-1.5 p-2 text-center">
+    <FiTruck className="h-6 w-6 text-[#D4AF37]" />
+    <span className="text-xs font-medium uppercase tracking-[0.18em] text-white/90">
+      Envío Rápido
+    </span>
+    <span className="text-[11px] text-white/50">
+      Empaque Protegido
+    </span>
+  </div>
+
+  <div className="flex flex-col items-center space-y-1.5 p-2 text-center">
+    <FiAward className="h-6 w-6 text-[#D4AF37]" />
+    <span className="text-xs font-medium uppercase tracking-[0.18em] text-white/90">
+      Calidad Premium
+    </span>
+    <span className="text-[11px] text-white/50">
+      Fijación Prolongada
+    </span>
+  </div>
+
+  <div className="flex flex-col items-center space-y-1.5 p-2 text-center">
+    <FiStar className="h-6 w-6 text-[#D4AF37]" />
+    <span className="text-xs font-medium uppercase tracking-[0.18em] text-white/90">
+      Atención VIP
+    </span>
+    <span className="text-[11px] text-white/50">
+      Asesoría Directa
+    </span>
+  </div>
+</div>
         </motion.div>
       </section>
 
       {/* FEATURED PERFUMES AUTO-SLIDING CAROUSEL */}
-      <section className="space-y-8">
+      <section className="-mt-8 space-y-8">
         <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
-          <SectionHeader
-            pretitle="Selección Exclusiva"
-            title="Fragancias Destacadas"
-            children="Explora nuestro catálogo de perfumes seleccionados al azar. Desliza para descubrir más."
-          />
+          <div className="mx-auto text-center">
+            <SectionHeader
+              pretitle="Selección Exclusiva"
+              title="Fragancias Destacadas"
+              children="Explora nuestro catálogo de perfumes seleccionados al azar. Desliza para descubrir más."
+            />
+          </div>
         </div>
 
         {/* Carousel Container */}
@@ -230,9 +246,9 @@ function Home() {
                 {perfumes.map((product) => (
                   <div
                     key={product.id}
-                    className="w-full flex-shrink-0 px-3 sm:w-1/2 lg:w-1/3 xl:w-1/4"
+                    className="w-1/2 flex-shrink-0 px-2 sm:px-3 lg:w-1/3 xl:w-1/4"
                   >
-                    <ProductCard product={product} />
+                    <ProductCard product={product} showDescription={false} />
                   </div>
                 ))}
               </motion.div>

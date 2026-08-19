@@ -6,7 +6,7 @@ import { useCart } from '../../context/CartContext.jsx'
 import { formatCopCurrency } from '../../lib/currency.js'
 import { getDiscountPercentage, getEffectivePrice } from '../../lib/pricing.js'
 
-function ProductCard({ product }) {
+function ProductCard({ product, showDescription = true }) {
   const { addItem } = useCart()
 
   const basePrice = Number(product.price) || 0
@@ -31,7 +31,7 @@ function ProductCard({ product }) {
         <img
           src={imageSrc}
           alt={product.name || 'Producto'}
-          className="h-[230px] w-full object-contain p-2 transition duration-500 group-hover:scale-[1.02] sm:h-[290px] sm:p-3 lg:h-[320px]"
+          className="h-[180px] w-full object-contain p-2 transition duration-500 group-hover:scale-[1.02] sm:h-[290px] sm:p-3 lg:h-[320px]"
         />
         {hasDiscount && (
           <div className="absolute left-4 top-4 rounded-full bg-red-500 px-3 py-2 text-xs uppercase tracking-[0.3em] text-white shadow-sm">
@@ -39,40 +39,42 @@ function ProductCard({ product }) {
           </div>
         )}
       </div>
-      <div className="flex flex-1 flex-col space-y-3 p-4 sm:p-6">
+      <div className="flex flex-1 flex-col space-y-3 p-3 sm:p-6">
         <div>
-          <p className="text-[10px] uppercase tracking-[0.28em] text-[#D4AF37]/80">{product.size || product.category?.name || 'Perfume'}</p>
+          <p className="text-[9px] uppercase tracking-[0.2em] text-[#D4AF37]/80 sm:text-[10px] sm:tracking-[0.28em]">{product.size || product.category?.name || 'Perfume'}</p>
           <Link
             to={`/product/${product.slug || product.id}`}
-            className="mt-2 block line-clamp-2 text-lg font-[TrajanPro] uppercase tracking-[0.1em] text-white transition hover:text-[#D4AF37] sm:text-xl sm:tracking-[0.12em]"
+            className="mt-2 block line-clamp-2 text-sm font-[TrajanPro] uppercase tracking-[0.06em] text-white transition hover:text-[#D4AF37] sm:text-xl sm:tracking-[0.12em]"
           >
             {product.name}
           </Link>
         </div>
-        <p className="min-h-[4.5rem] line-clamp-3 text-sm leading-6 text-white/70">
-          {product.description || 'Descripción disponible al ver el detalle del producto.'}
-        </p>
+        {showDescription && (
+          <p className="min-h-[4.5rem] line-clamp-3 text-sm leading-6 text-white/70">
+            {product.description || 'Descripción disponible al ver el detalle del producto.'}
+          </p>
+        )}
         <div className="mt-auto flex flex-col gap-3 pt-2">
           <div>
-            <p className="text-[11px] uppercase tracking-[0.22em] text-white/60">Precio</p>
+            <p className="text-[9px] uppercase tracking-[0.16em] text-white/60 sm:text-[11px] sm:tracking-[0.22em]">Precio</p>
             <div className="flex items-center gap-2">
-              <span className="text-xl font-semibold text-white">{formatCopCurrency(discountedPrice)}</span>
+              <span className="text-base font-semibold text-white sm:text-xl">{formatCopCurrency(discountedPrice)}</span>
               {hasDiscount && (
-                <span className="text-sm line-through text-white/40">{formatCopCurrency(basePrice)}</span>
+                <span className="text-xs line-through text-white/40 sm:text-sm">{formatCopCurrency(basePrice)}</span>
               )}
             </div>
           </div>
           <div className="flex w-full items-center gap-2 sm:gap-3">
             <Link
               to={`/product/${product.slug || product.id}`}
-              className="flex-1 whitespace-nowrap rounded-full border border-[#D4AF37]/20 bg-white/5 px-3 py-2.5 text-center text-[10px] uppercase tracking-[0.2em] text-[#D4AF37] transition hover:border-[#D4AF37]/40 hover:bg-white/10"
+              className="flex-1 whitespace-nowrap rounded-full border border-[#D4AF37]/20 bg-white/5 px-2 py-2.5 text-center text-[8px] uppercase tracking-[0.12em] text-[#D4AF37] transition hover:border-[#D4AF37]/40 hover:bg-white/10 sm:px-3 sm:text-[10px] sm:tracking-[0.2em]"
             >
               Ver detalle
             </Link>
             <button
               type="button"
               onClick={handleAddToCart}
-              className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[#D4AF37]/20 bg-[#D4AF37] text-black transition hover:scale-105"
+              className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-[#D4AF37]/20 bg-[#D4AF37] text-black transition hover:scale-105 sm:h-10 sm:w-10"
               aria-label={`Agregar ${product.name} al carrito`}
             >
               <FiShoppingBag size={16} />

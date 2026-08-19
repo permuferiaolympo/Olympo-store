@@ -102,6 +102,7 @@ function Product() {
         <SectionHeader pretitle="Detalle del perfume" title={product.name}>
           Conoce todos los detalles de esta fragancia y elige la cantidad ideal para tu pedido.
         </SectionHeader>
+        <div className="h-px w-full max-w-5xl bg-gradient-to-r from-transparent via-[#D4AF37]/55 to-transparent" />
       </div>
 
       <div className="grid gap-5 sm:gap-8 lg:grid-cols-12 lg:items-start">
@@ -214,6 +215,21 @@ function Product() {
               <p className="mt-4 text-sm leading-7 text-white/75 sm:text-base sm:leading-8">
                 {product.description || 'La descripción de esta fragancia estará disponible próximamente.'}
               </p>
+              {product.notes?.length > 0 && (
+                <div className="mt-6 border-t border-white/10 pt-5">
+                  <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#D4AF37]/60">Notas olfativas</p>
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    {product.notes.map((note, index) => (
+                      <span
+                        key={`${note}-${index}`}
+                        className="rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-white/70"
+                      >
+                        {note}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
