@@ -455,7 +455,7 @@ export default function CreateProduct() {
                   <input
                     type="text"
                     name="brand"
-                    placeholder="Ej. OLIMPO"
+                    placeholder="Ej. OLYMPO"
                     value={formData.brand}
                     onChange={handleChange}
                     className="w-full rounded-2xl border border-white/10 bg-white/5 px-5 py-4 text-white outline-none transition focus:border-[#D4AF37]/60 focus:ring-2 focus:ring-[#D4AF37]/20"

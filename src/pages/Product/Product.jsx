@@ -8,6 +8,37 @@ import { getPerfumeBySlug, getPerfumesByCategory } from '../../services/perfumeS
 import { formatCopCurrency } from '../../lib/currency.js'
 import { getDiscountPercentage, getEffectivePrice } from '../../lib/pricing.js'
 
+function groupOlfactiveNotes(notes) {
+  const groups = [
+    { key: 'top', label: 'Salida', notes: [] },
+    { key: 'heart', label: 'Corazón', notes: [] },
+    { key: 'base', label: 'Fondo', notes: [] },
+    { key: 'other', label: 'Otros', notes: [] },
+  ]
+  let currentGroup = groups[3]
+
+  for (const rawNote of notes) {
+    const note = String(rawNote || '').trim()
+    if (!note) continue
+
+    const sectionMatch = note.match(/^(salida|corazon|corazón|fondo)\s*:\s*(.*)$/i)
+    if (sectionMatch) {
+      const section = sectionMatch[1].toLowerCase()
+      currentGroup = section === 'salida'
+        ? groups[0]
+        : section === 'fondo'
+          ? groups[2]
+          : groups[1]
+      if (sectionMatch[2].trim()) currentGroup.notes.push(sectionMatch[2].trim())
+      continue
+    }
+
+    currentGroup.notes.push(note)
+  }
+
+  return groups.filter((group) => group.notes.length > 0)
+}
+
 function Product() {
   const { slug } = useParams()
   const [product, setProduct] = useState(null)
@@ -71,6 +102,7 @@ function Product() {
     : product.image || null
 
   const safeQuantity = Math.max(1, Math.min(quantity, product.stock || 999))
+  const olfactiveNoteGroups = groupOlfactiveNotes(product.notes || [])
 
   // Normalize usage data here in case it's stored as a JSON string in the DB
   const usage = (() => {
@@ -218,14 +250,21 @@ function Product() {
               {product.notes?.length > 0 && (
                 <div className="mt-6 border-t border-white/10 pt-5">
                   <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#D4AF37]/60">Notas olfativas</p>
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    {product.notes.map((note, index) => (
-                      <span
-                        key={`${note}-${index}`}
-                        className="rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-white/70"
-                      >
-                        {note}
-                      </span>
+                  <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                    {olfactiveNoteGroups.map((group) => (
+                      <div key={group.key} className="rounded-2xl border border-white/10 bg-black/20 p-4">
+                        <p className="text-[10px] font-semibold uppercase tracking-[0.25em] text-[#D4AF37]">
+                          {group.label}
+                        </p>
+                        <ul className="mt-3 space-y-2">
+                          {group.notes.map((note, index) => (
+                            <li key={`${group.key}-${note}-${index}`} className="flex items-start gap-2 text-sm text-white/75">
+                              <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-[#D4AF37]" />
+                              <span>{note}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
                     ))}
                   </div>
                 </div>

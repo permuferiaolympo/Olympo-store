@@ -79,7 +79,7 @@ function Admin() {
                 id="admin-email"
                 type="email"
                 required
-                placeholder="admin@olimpo.com"
+                placeholder="admin@olympo.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="w-full rounded-2xl border border-white/10 bg-white/5 pl-12 pr-5 py-4 text-white outline-none transition focus:border-[#D4AF37]/60 focus:ring-2 focus:ring-[#D4AF37]/20"

@@ -6,7 +6,7 @@ function Contact() {
     <div className="space-y-16">
       <SectionHeader
         pretitle="Contacto"
-        title="Conecta con OLIMPO"
+        title="Conecta con OLYMPO"
         children="Envía un mensaje, reserva una consulta privada o descubre nuestra casa de fragancias."
       />
       <div className="grid gap-10 lg:grid-cols-[1fr_0.9fr]">
@@ -22,7 +22,7 @@ function Contact() {
             </div>
             <div className="flex items-start gap-3">
               <FiMail size={20} className="text-[#D4AF37]" />
-              <p>contacto@olimpo-perfumeria.com</p>
+              <p>contacto@olympo-perfumeria.com</p>
             </div>
             <div className="flex items-start gap-3">
               <FiPhone size={20} className="text-[#D4AF37]" />

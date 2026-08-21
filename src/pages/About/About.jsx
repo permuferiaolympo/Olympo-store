@@ -5,20 +5,20 @@ function About() {
     <div className="space-y-16">
       <SectionHeader
         pretitle="Nuestra esencia"
-        title="Historia de OLIMPO"
+        title="Historia de OLYMPO"
         children="Una casa de perfumes creada para quienes buscan una experiencia sensorial de lujo sin precedentes."
       />
 
       <div className="grid gap-10 lg:grid-cols-[1fr_0.85fr] lg:items-center">
         <div className="space-y-8 rounded-[2.5rem] border border-white/10 bg-white/5 p-10 shadow-[0_40px_120px_-80px_rgba(0,0,0,0.8)]">
           <p className="text-sm leading-8 text-white/70">
-            OLIMPO PERFUMERÍA nació como un refugio para las fragancias más exclusivas, donde cada creación se perfila con una filosofía de nobleza, sutileza y poder. Nuestro propósito es ofrecer perfumes que actúen como un amuleto exquisito de identidad.
+            OLYMPO PERFUMERÍA nació como un refugio para las fragancias más exclusivas, donde cada creación se perfila con una filosofía de nobleza, sutileza y poder. Nuestro propósito es ofrecer perfumes que actúen como un amuleto exquisito de identidad.
           </p>
           <p className="text-sm leading-8 text-white/70">
             Inspirados en nombres icónicos del lujo y en los rituales de belleza más refinados, desarrollamos piezas olfativas con ingredientes nobles, envases minimalistas y presentaciones que evocan un lenguaje de distinción.
           </p>
           <p className="text-sm leading-8 text-white/70">
-            Cada cliente de OLIMPO es parte de una experiencia curated: asesoría personalizada, selección cuidada de fragancias y un servicio de entrega diseñado para preservar ese momento de descubrimiento.
+            Cada cliente de OLYMPO es parte de una experiencia curated: asesoría personalizada, selección cuidada de fragancias y un servicio de entrega diseñado para preservar ese momento de descubrimiento.
           </p>
         </div>
 

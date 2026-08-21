@@ -22,7 +22,7 @@ function Cart() {
       const items = cartItems
         .map((item) => `• ${item.name} × ${item.quantity} — ${formatCopCurrency(item.unitPrice * item.quantity)}`)
         .join('\n')
-      const message = encodeURIComponent(`Hola, quiero confirmar este pedido en OLIMPO:\n\n${items}\n\n*Total: ${formatCopCurrency(subtotal)}*`)
+      const message = encodeURIComponent(`Hola, quiero confirmar este pedido en OLYMPO:\n\n${items}\n\n*Total: ${formatCopCurrency(subtotal)}*`)
       window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${message}`, '_blank', 'noopener,noreferrer')
     } catch (error) {
       toast.error(error.message)
@@ -34,7 +34,7 @@ function Cart() {
       <SectionHeader
         pretitle="Carrito de compras"
         title="Tu selección de fragancias"
-        children="Prepara tu pedido premium antes de confirmar la experiencia OLIMPO."
+        children="Prepara tu pedido premium antes de confirmar la experiencia OLYMPO."
       />
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1.45fr)_minmax(320px,0.75fr)] lg:gap-10">

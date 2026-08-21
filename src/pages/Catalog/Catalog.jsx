@@ -4,6 +4,7 @@ import { FiChevronLeft, FiChevronRight } from 'react-icons/fi'
 import SectionHeader from '../../components/common/SectionHeader.jsx'
 import ProductCard from '../../components/common/ProductCard.jsx'
 import { getPerfumes } from '../../services/perfumeService.js'
+import { getDiscountPercentage } from '../../lib/pricing.js'
 
 const ITEMS_PER_PAGE = 10
 const CATEGORY_FILTERS = [
@@ -12,6 +13,7 @@ const CATEGORY_FILTERS = [
   { value: 'hombre', label: 'Hombre' },
   { value: 'unisex', label: 'Unisex' },
   { value: 'preparadas', label: 'Preparadas' },
+  { value: 'discount', label: 'Descuentos' },
 ]
 
 const normalizeCategory = (value) => String(value || '')
@@ -54,7 +56,9 @@ function Catalog() {
 
     return products.filter((product) => {
       const productCategory = normalizeCategory(product.category?.name)
-      const matchesCategory = categoryFilter === 'all' || productCategory === categoryFilter
+      const matchesCategory = categoryFilter === 'all'
+        || (categoryFilter === 'discount' && getDiscountPercentage(product) > 0)
+        || productCategory === categoryFilter
       if (!matchesCategory) return false
       if (!query) return true
 
@@ -88,12 +92,12 @@ function Catalog() {
   return (
     <div className="space-y-8 sm:space-y-10">
       <section className="rounded-[1.5rem] border border-white/10 bg-[linear-gradient(135deg,_rgba(212,175,55,0.14),_rgba(0,0,0,0.25))] p-5 shadow-[0_30px_90px_-60px_rgba(0,0,0,0.95)] sm:rounded-[2rem] sm:p-8 lg:p-10">
-        <div className="text-center">
-          <SectionHeader
-            pretitle="Catálogo completo"
-            title="Explora nuestra colección"
-          />
-        </div>
+<div className="text-center flex justify-center">
+  <SectionHeader
+    pretitle="Catálogo completo"
+    title="Explora nuestra colección"
+  />
+</div>
 
         <div className="mt-6">
           <label htmlFor="catalog-search" className="mb-2 block text-center text-xs uppercase tracking-[0.3em] text-[#D4AF37]/80">
@@ -109,9 +113,9 @@ function Catalog() {
           />
         </div>
 
-        <div className="mt-6">
-          <p className="mb-6 text-center text-xs uppercase tracking-[0.3em] text-[#D4AF37]/80">Filtrar por categoría</p>
-          <div className="mx-auto grid max-w-[280px] grid-cols-2 gap-2.5 sm:flex sm:max-w-none sm:flex-wrap sm:justify-center">
+        <div className="mt-8">
+          {/* <p className="mb-12 text-center text-xs uppercase tracking-[0.3em] text-[#D4AF37]/80 sm:mb-10">Filtrar por categoría </p> */}
+          <div className="mx-auto grid max-w-[225px] grid-cols-2 gap-x-3 gap-y-4 sm:flex sm:max-w-none sm:flex-wrap sm:justify-center">
             {CATEGORY_FILTERS.map((filter) => {
               const isActive = categoryFilter === filter.value
 
@@ -121,7 +125,7 @@ function Catalog() {
                   type="button"
                   onClick={() => setCategoryFilter(filter.value)}
                   aria-pressed={isActive}
-                  className={`rounded-full border px-2 py-2 text-[9px] uppercase tracking-[0.14em] transition sm:px-4 sm:text-[10px] sm:tracking-[0.2em] ${
+                  className={`rounded-full border px-2 py-1 text-[8px] uppercase tracking-[0.08em] transition sm:px-2.5 sm:py-1 sm:text-[9px] sm:tracking-[0.14em] ${
                     isActive
                       ? 'border-[#D4AF37] bg-[#D4AF37] text-black shadow-[0_0_18px_rgba(212,175,55,0.2)]'
                       : 'border-white/10 bg-white/5 text-white/65 hover:border-[#D4AF37]/50 hover:text-white'

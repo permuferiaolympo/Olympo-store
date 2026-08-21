@@ -103,7 +103,7 @@ function Home() {
           <div className="h-10 w-10 animate-spin rounded-full border-2 border-[#D4AF37] border-t-transparent" />
         </div>
         <p className="text-xs uppercase tracking-[0.3em] text-[#D4AF37]/70 animate-pulse">
-          Cargando Fragancias Olimpo...
+          Cargando Fragancias Olympo...
         </p>
       </div>
     )
@@ -127,7 +127,7 @@ function Home() {
           <div>
             <span className="inline-flex items-center gap-2 rounded-full border border-[#D4AF37]/40 bg-[#D4AF37]/10 px-5 py-2 text-xs font-medium uppercase tracking-[0.35em] text-[#D4AF37] backdrop-blur-md shadow-[0_0_25px_rgba(212,175,55,0.15)]">
               <FiStar className="text-sm animate-spin" style={{ animationDuration: '6s' }} />
-              OLIMPO PERFUMERÍA DE LUXE
+              OLYMPO PERFUMERÍA DE LUXE
             </span>
           </div>
 

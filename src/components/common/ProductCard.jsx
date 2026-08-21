@@ -54,7 +54,7 @@ function ProductCard({ product, showDescription = true }) {
             {product.description || 'Descripción disponible al ver el detalle del producto.'}
           </p>
         )}
-        <div className="mt-auto flex flex-col gap-3 pt-2">
+        <div className="mt-auto flex flex-col gap-3 border-t border-white/15 pt-4">
           <div>
             <p className="text-[9px] uppercase tracking-[0.16em] text-white/60 sm:text-[11px] sm:tracking-[0.22em]">Precio</p>
             <div className="flex items-center gap-2">
