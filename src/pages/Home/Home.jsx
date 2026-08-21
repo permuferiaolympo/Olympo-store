@@ -121,7 +121,7 @@ function Home() {
           initial={{ opacity: 0, y: 25 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.1 }}
-          className="relative z-10 mx-auto max-w-4xl text-center space-y-8"
+          className="relative z-10 mx-auto flex max-w-4xl flex-col items-center space-y-8 text-center"
         >
           {/* Top Pill Badge */}
           <div>
@@ -140,7 +140,7 @@ function Home() {
           </h1>
 
           {/* Subtitle */}
-          <p className="mx-auto max-w-2xl text-base leading-8 text-white/70 sm:text-lg font-light">
+          <p className="w-full max-w-2xl text-center text-base font-light leading-8 text-white/70 sm:text-lg">
             Descubre nuestra exclusiva selección de fragancias de alta gama. Acordes nobles, estelas memorables y el sello atemporal de la elegancia.
           </p>
 
