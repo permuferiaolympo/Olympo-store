@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Link, useParams } from 'react-router-dom'
+import { FaWhatsapp } from 'react-icons/fa'
 import { FiArrowLeft, FiCheckCircle, FiShoppingBag, FiCloudSnow, FiUmbrella, FiWind, FiSunrise, FiSun, FiMoon, FiStar } from 'react-icons/fi'
 import toast from 'react-hot-toast'
 import SectionHeader from '../../components/common/SectionHeader.jsx'
@@ -46,7 +47,6 @@ function Product() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [selectedImageIndex, setSelectedImageIndex] = useState(0)
-  const [quantity, setQuantity] = useState(1)
   const { addItem } = useCart()
 
   useEffect(() => {
@@ -101,7 +101,6 @@ function Product() {
     ? product.gallery[selectedImageIndex] || product.gallery[0]
     : product.image || null
 
-  const safeQuantity = Math.max(1, Math.min(quantity, product.stock || 999))
   const olfactiveNoteGroups = groupOlfactiveNotes(product.notes || [])
 
   // Normalize usage data here in case it's stored as a JSON string in the DB
@@ -118,9 +117,13 @@ function Product() {
   })()
 
   const handleAddToCart = () => {
-    addItem(product, safeQuantity)
-    toast.success(`Se agregó ${safeQuantity} unidad${safeQuantity > 1 ? 'es' : ''} de ${product.name} al carrito`)
+    addItem(product, 1)
+    toast.success(`Se agregó ${product.name} al carrito`)
   }
+
+  const whatsappMessage = encodeURIComponent(
+    `Hola, quisiera recibir asesoría sobre este perfume.\n\n*Producto:* ${product.name}\n*Precio:* ${formatCopCurrency(discountedPrice)}\n*Enlace:* ${window.location.href}\n\n¿Me pueden brindar más información, por favor?`
+  )
 
   return (
     <div className="space-y-8 sm:space-y-12">
@@ -132,7 +135,7 @@ function Product() {
           <FiArrowLeft size={15} /> Volver al catálogo
         </Link>
         <SectionHeader pretitle="Detalle del perfume" title={product.name}>
-          Conoce todos los detalles de esta fragancia y elige la cantidad ideal para tu pedido.
+         {/*  Conoce todos los detalles de esta fragancia y elige la cantidad ideal para tu pedido. */}
         </SectionHeader>
         <div className="h-px w-full max-w-5xl bg-gradient-to-r from-transparent via-[#D4AF37]/55 to-transparent" />
       </div>
@@ -313,31 +316,28 @@ function Product() {
               </div>
             )}
 
-            <div className="grid gap-4 sm:grid-cols-[1fr_auto] sm:items-end">
-              <div className="flex items-center justify-between gap-3 rounded-3xl border border-white/10 bg-black/40 px-4 py-3">
-                <label className="text-xs uppercase tracking-[0.18em] text-white/60 sm:tracking-[0.25em]">Cantidad</label>
-                <input
-                  type="number"
-                  min="1"
-                  max={product.stock || 99}
-                  value={quantity}
-                  onChange={(e) => setQuantity(Math.max(1, Number(e.target.value) || 1))}
-                  className="w-20 rounded-2xl border border-white/10 bg-white/5 px-3 py-2 text-center text-white outline-none transition focus:border-[#D4AF37]/60 focus:ring-2 focus:ring-[#D4AF37]/20"
-                  aria-label="Cantidad del producto"
-                />
-              </div>
-              <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+            <div className="min-w-0">
+              <div className="grid min-w-0 gap-2 sm:grid-cols-2">
                 <button
                   type="button"
                   onClick={handleAddToCart}
-                  className="inline-flex w-full flex-1 items-center justify-center gap-3 rounded-full bg-gradient-to-r from-[#D4AF37] to-[#AA7C11] px-6 py-4 text-xs font-semibold uppercase tracking-[0.2em] text-black shadow-[0_0_30px_rgba(212,175,55,0.2)] transition hover:brightness-110 active:scale-[0.99] disabled:opacity-50 sm:w-auto sm:px-8 sm:tracking-[0.28em]"
+                  className="inline-flex min-h-12 w-full min-w-0 items-center justify-center gap-2 rounded-full bg-gradient-to-r from-[#D4AF37] to-[#AA7C11] px-3 py-3 text-[10px] font-semibold uppercase leading-4 tracking-[0.08em] text-black shadow-[0_0_24px_rgba(212,175,55,0.18)] transition hover:brightness-110 active:scale-[0.99] disabled:opacity-50 sm:px-4"
                   disabled={product.stock <= 0}
                 >
-                  <FiShoppingBag size={18} /> {product.stock > 0 ? 'Agregar al carrito' : 'Agotado'}
+                  <FiShoppingBag size={16} /> {product.stock > 0 ? 'Agregar al carrito' : 'Agotado'}
                 </button>
+                <a
+                  href={`https://wa.me/573013285697?text=${whatsappMessage}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  aria-label={`Preguntar por ${product.name} en WhatsApp`}
+                  className="inline-flex min-h-12 w-full min-w-0 items-center justify-center gap-2 rounded-full border border-[#25D366]/60 bg-[#25D366]/10 px-3 py-3 text-[10px] font-semibold uppercase leading-4 tracking-[0.08em] text-[#8ff0b1] transition hover:bg-[#25D366]/20 sm:px-4"
+                >
+                  <FaWhatsapp size={16} /> Preguntar por WhatsApp
+                </a>
                 <Link
                   to="/catalog"
-                  className="text-center text-xs uppercase tracking-[0.2em] text-white/60 transition hover:text-[#D4AF37] sm:text-left sm:tracking-[0.25em]"
+                  className="px-2 text-center text-[10px] uppercase leading-4 tracking-[0.1em] text-white/60 transition hover:text-[#D4AF37] sm:col-span-2"
                 >
                   Seguir explorando
                 </Link>

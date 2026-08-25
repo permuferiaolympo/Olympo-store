@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion'
+import { FaWhatsapp } from 'react-icons/fa'
 import { Outlet, useLocation } from 'react-router-dom'
 import Header from './Header.jsx'
 import Footer from './Footer.jsx'
@@ -27,6 +28,18 @@ function Layout() {
         </main>
       </div>
       {!hideFooter && <Footer />}
+      {!hideFooter && (
+        <a
+          href="https://wa.me/573013285697"
+          target="_blank"
+          rel="noreferrer"
+          aria-label="Escribir por WhatsApp"
+          title="Escribir por WhatsApp"
+          className="fixed bottom-5 right-5 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-[#25D366] text-white shadow-lg transition-transform duration-200 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-[#25D366] focus:ring-offset-2 focus:ring-offset-black sm:bottom-7 sm:right-7"
+        >
+          <FaWhatsapp aria-hidden="true" size={30} />
+        </a>
+      )}
     </div>
   )
 }

@@ -1,17 +1,34 @@
+import { useState } from 'react'
 import toast from 'react-hot-toast'
 import { Link } from 'react-router-dom'
-import { FiArrowRight, FiChevronLeft, FiMinus, FiPlus, FiShoppingBag, FiTrash2 } from 'react-icons/fi'
+import { FiArrowRight, FiChevronLeft, FiMinus, FiPlus, FiShoppingBag, FiTrash2, FiX } from 'react-icons/fi'
 import SectionHeader from '../../components/common/SectionHeader.jsx'
 import { useCart } from '../../context/CartContext.jsx'
 import { formatCopCurrency } from '../../lib/currency.js'
 
-const WHATSAPP_NUMBER = '573043464284'
+const WHATSAPP_NUMBER = '573013285697'
 
 function Cart() {
-  const { cartItems, subtotal, totalItems, updateQuantity, removeItem, validateCartStock } = useCart()
+  const { cartItems, subtotal, totalItems, updateQuantity, removeItem, clearCart, validateCartStock } = useCart()
   const hasItems = cartItems.length > 0
+  const [checkoutOpen, setCheckoutOpen] = useState(false)
+  const [customerData, setCustomerData] = useState({
+    name: '',
+    phone: '',
+    deliveryMethod: 'pickup',
+    address: '',
+  })
 
-  const handleCheckout = async () => {
+  const handleCheckout = () => {
+    setCheckoutOpen(true)
+  }
+
+  const handleCustomerDataChange = (event) => {
+    const { name, value } = event.target
+    setCustomerData((previous) => ({ ...previous, [name]: value }))
+  }
+
+  const handleSendOrder = async () => {
     try {
       const stockIssues = await validateCartStock()
       if (stockIssues.length > 0) {
@@ -22,8 +39,16 @@ function Cart() {
       const items = cartItems
         .map((item) => `• ${item.name} × ${item.quantity} — ${formatCopCurrency(item.unitPrice * item.quantity)}`)
         .join('\n')
-      const message = encodeURIComponent(`Hola, quiero confirmar este pedido en OLYMPO:\n\n${items}\n\n*Total: ${formatCopCurrency(subtotal)}*`)
+      const customerLines = [
+        customerData.name && `Nombre: ${customerData.name}`,
+        customerData.phone && `Teléfono: ${customerData.phone}`,
+        `Entrega: ${customerData.deliveryMethod === 'pickup' ? 'Recoger en el local' : 'Domicilio'}`,
+        customerData.deliveryMethod === 'delivery' && customerData.address && `Dirección: ${customerData.address}`,
+      ].filter(Boolean).join('\n')
+      const message = encodeURIComponent(`Hola, quiero confirmar este pedido en OLYMPO:\n\n*Datos del comprador:*\n${customerLines}\n\n*Productos:*\n${items}\n\n*Total: ${formatCopCurrency(subtotal)}*\n\nQuedo atento a la confirmación, disponibilidad y medios de pago.`)
       window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${message}`, '_blank', 'noopener,noreferrer')
+      clearCart()
+      setCheckoutOpen(false)
     } catch (error) {
       toast.error(error.message)
     }
@@ -146,6 +171,66 @@ function Cart() {
           </div>
         </aside>
       </div>
+
+      {checkoutOpen && (
+        <div className="fixed inset-0 z-[60] flex items-end justify-center bg-black/75 p-4 backdrop-blur-sm sm:items-center">
+          <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-[2rem] border border-[#D4AF37]/20 bg-[#11100d] p-6 shadow-[0_30px_100px_-30px_rgba(0,0,0,0.9)] sm:p-8">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <p className="text-xs uppercase tracking-[0.3em] text-[#D4AF37]/70">Antes de confirmar</p>
+                <h2 className="mt-2 text-2xl font-[TrajanPro] uppercase tracking-[0.1em] text-white">Datos del pedido</h2>
+              </div>
+              <button
+                type="button"
+                onClick={() => setCheckoutOpen(false)}
+                aria-label="Cerrar formulario"
+                className="grid h-10 w-10 shrink-0 place-items-center rounded-full border border-white/10 text-white/70 transition hover:border-[#D4AF37]/40 hover:text-[#D4AF37]"
+              >
+                <FiX size={18} />
+              </button>
+            </div>
+            <p className="mt-4 text-sm leading-6 text-white/60">Déjanos tus datos para identificar tu pedido. Puedes completar solo la información que desees.</p>
+
+            <div className="mt-6 space-y-5">
+              <div className="grid gap-4 sm:grid-cols-2">
+                <label className="text-sm text-white/70">
+                  Nombre
+                  <input name="name" value={customerData.name} onChange={handleCustomerDataChange} type="text" placeholder="Tu nombre" className="mt-2 w-full rounded-2xl border border-white/10 bg-black/40 px-4 py-3 text-white outline-none transition focus:border-[#D4AF37]/50" />
+                </label>
+                <label className="text-sm text-white/70">
+                  Teléfono
+                  <input name="phone" value={customerData.phone} onChange={handleCustomerDataChange} type="tel" placeholder="Tu teléfono" className="mt-2 w-full rounded-2xl border border-white/10 bg-black/40 px-4 py-3 text-white outline-none transition focus:border-[#D4AF37]/50" />
+                </label>
+              </div>
+
+              <fieldset>
+                <legend className="text-sm text-white/70">¿Cómo deseas recibir tu pedido?</legend>
+                <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                  <label className={`cursor-pointer rounded-2xl border px-4 py-3 text-sm transition ${customerData.deliveryMethod === 'pickup' ? 'border-[#D4AF37] bg-[#D4AF37]/10 text-[#D4AF37]' : 'border-white/10 bg-black/30 text-white/70 hover:border-white/25'}`}>
+                    <input type="radio" name="deliveryMethod" value="pickup" checked={customerData.deliveryMethod === 'pickup'} onChange={handleCustomerDataChange} className="sr-only" />
+                    Recoger en el local
+                  </label>
+                  <label className={`cursor-pointer rounded-2xl border px-4 py-3 text-sm transition ${customerData.deliveryMethod === 'delivery' ? 'border-[#D4AF37] bg-[#D4AF37]/10 text-[#D4AF37]' : 'border-white/10 bg-black/30 text-white/70 hover:border-white/25'}`}>
+                    <input type="radio" name="deliveryMethod" value="delivery" checked={customerData.deliveryMethod === 'delivery'} onChange={handleCustomerDataChange} className="sr-only" />
+                    Domicilio
+                  </label>
+                </div>
+              </fieldset>
+
+              {customerData.deliveryMethod === 'delivery' && (
+                <label className="block text-sm text-white/70">
+                  Dirección de entrega
+                  <textarea name="address" value={customerData.address} onChange={handleCustomerDataChange} rows="3" placeholder="Escribe la dirección de entrega" className="mt-2 w-full rounded-2xl border border-white/10 bg-black/40 px-4 py-3 text-white outline-none transition focus:border-[#D4AF37]/50" />
+                </label>
+              )}
+
+              <button type="button" onClick={handleSendOrder} className="inline-flex w-full items-center justify-center gap-3 rounded-full bg-[#D4AF37] px-5 py-4 text-xs font-semibold uppercase tracking-[0.2em] text-black transition hover:brightness-110">
+                <FiShoppingBag size={17} /> Enviar pedido por WhatsApp
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

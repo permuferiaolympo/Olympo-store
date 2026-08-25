@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Link, NavLink, useNavigate } from 'react-router-dom'
 import { FiSearch, FiShoppingBag, FiMenu, FiX, FiShield, FiLogOut } from 'react-icons/fi'
 import { useAuth } from '../../context/AuthContext.jsx'
+import { useCart } from '../../context/CartContext.jsx'
 import { signOut } from '../../services/authService.js'
 import toast from 'react-hot-toast'
 import logoImage from '../../assets/logo/logo.jpeg'
@@ -17,6 +18,7 @@ function Header() {
   const [open, setOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
   const { isAuthenticated, isAdmin } = useAuth()
+  const { totalItems } = useCart()
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -77,10 +79,15 @@ function Header() {
           </Link>
           <Link
             to="/cart"
-            className="grid h-11 w-11 place-items-center rounded-full border border-[#D4AF37]/20 bg-white/5 text-[#D4AF37] transition hover:border-[#D4AF37]/40 hover:bg-white/10"
+            className="relative grid h-11 w-11 place-items-center rounded-full border border-[#D4AF37]/20 bg-white/5 text-[#D4AF37] transition hover:border-[#D4AF37]/40 hover:bg-white/10"
             aria-label="Carrito"
           >
             <FiShoppingBag size={18} />
+            {totalItems > 0 && (
+              <span className="absolute -right-1 -top-1 grid min-h-5 min-w-5 place-items-center rounded-full border border-black bg-[#D4AF37] px-1 text-[10px] font-bold leading-none text-black">
+                {totalItems > 99 ? '99+' : totalItems}
+              </span>
+            )}
           </Link>
 
           {isAuthenticated && (
@@ -139,9 +146,14 @@ function Header() {
                 <Link
                   to="/cart"
                   onClick={() => setOpen(false)}
-                  className="rounded-3xl border border-[#D4AF37]/20 bg-white/5 px-4 py-3 text-left text-sm uppercase tracking-[0.22em] text-[#D4AF37] transition hover:border-[#D4AF37]/40 hover:bg-white/10"
+                  className="flex items-center justify-between rounded-3xl border border-[#D4AF37]/20 bg-white/5 px-4 py-3 text-left text-base uppercase tracking-[0.25em] text-[#D4AF37] transition hover:border-[#D4AF37]/40 hover:bg-white/10"
                 >
-                  Carrito
+                  <span>Carrito</span>
+                  {totalItems > 0 && (
+                    <span className="grid min-h-6 min-w-6 place-items-center rounded-full bg-[#D4AF37] px-1 text-xs font-bold leading-none text-black">
+                      {totalItems > 99 ? '99+' : totalItems}
+                    </span>
+                  )}
                 </Link>
 
                 {isAuthenticated && (

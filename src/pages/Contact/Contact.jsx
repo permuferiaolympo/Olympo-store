@@ -1,4 +1,4 @@
-import { FiMail, FiMapPin, FiPhone, FiInstagram, FiFacebook, FiTwitter } from 'react-icons/fi'
+import { FiMail, FiMapPin, FiInstagram, FiPhone } from 'react-icons/fi'
 import SectionHeader from '../../components/common/SectionHeader.jsx'
 
 function Contact() {
@@ -18,28 +18,22 @@ function Contact() {
           <div className="space-y-4 text-sm text-white/70">
             <div className="flex items-start gap-3">
               <FiMapPin size={20} className="text-[#D4AF37]" />
-              <p>Polanco, Ciudad de México. Espacio diseñado para encuentros privados.</p>
+              <p>Carrera 74 #98-118, barrio Doce de Octubre, Medellín</p>
             </div>
             <div className="flex items-start gap-3">
               <FiMail size={20} className="text-[#D4AF37]" />
-              <p>contacto@olympo-perfumeria.com</p>
+              <p>Permuferiaolympo@gmail.com</p>
             </div>
             <div className="flex items-start gap-3">
               <FiPhone size={20} className="text-[#D4AF37]" />
-              <p>+52 55 1234 5678</p>
+              <p>+57 301 328 5697</p>
             </div>
           </div>
           <div className="space-y-4">
             <p className="text-xs uppercase tracking-[0.35em] text-[#D4AF37]/70">Redes</p>
             <div className="flex flex-wrap gap-3">
-              <a href="#" className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-3 text-sm uppercase tracking-[0.22em] text-white/80 transition hover:border-[#D4AF37]/30 hover:text-[#D4AF37]">
+              <a href="https://www.instagram.com/perfumes_olympo?igsi=a25tcW1hNHgwZGxz" target="_blank" rel="noreferrer" className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-3 text-sm uppercase tracking-[0.22em] text-white/80 transition hover:border-[#D4AF37]/30 hover:text-[#D4AF37]">
                 <FiInstagram /> Instagram
-              </a>
-              <a href="#" className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-3 text-sm uppercase tracking-[0.22em] text-white/80 transition hover:border-[#D4AF37]/30 hover:text-[#D4AF37]">
-                <FiFacebook /> Facebook
-              </a>
-              <a href="#" className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-3 text-sm uppercase tracking-[0.22em] text-white/80 transition hover:border-[#D4AF37]/30 hover:text-[#D4AF37]">
-                <FiTwitter /> Twitter
               </a>
             </div>
           </div>
@@ -65,9 +59,14 @@ function Contact() {
           </form>
           <div className="mt-10 rounded-[2rem] border border-[#D4AF37]/10 bg-black/40 p-6 text-white/70">
             <p className="text-sm uppercase tracking-[0.35em] text-[#D4AF37]/70">Ubicación</p>
-            <div className="mt-4 h-56 rounded-[2rem] bg-white/5 p-5 text-sm leading-7 text-white/60">
-              Mapa preparado para integrarse con tu servicio preferido cuando agreguemos la lógica de geolocalización.
-            </div>
+            <iframe
+              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3965.7513135658546!2d-75.57877772597331!3d6.2963760936927144!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x8e442ed669c881af%3A0x1045f043589912b1!2sCra.%2074%20%2398%20118%2C%20La%20Esperanza%2C%20Medell%C3%ADn%2C%20Doce%20de%20Octubre%2C%20Medell%C3%ADn%2C%20Antioquia!5e0!3m2!1ses-419!2sco!4v1787673121742!5m2!1ses-419!2sco"
+              title="Mapa de OLYMPO Perfumería"
+              className="mt-4 h-56 w-full rounded-[2rem] border-0"
+              allowFullScreen
+              loading="lazy"
+              referrerPolicy="strict-origin-when-cross-origin"
+            />
           </div>
         </div>
       </div>
