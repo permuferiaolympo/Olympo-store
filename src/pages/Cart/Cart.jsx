@@ -70,7 +70,6 @@ function Cart() {
                 <FiShoppingBag size={24} />
               </div>
               <p className="mt-5 text-lg font-semibold text-white">Tu carrito está vacío</p>
-              <p className="mx-auto mt-3 max-w-sm text-sm">Descubre una fragancia que te acompañe y agrégala a tu selección.</p>
               <Link to="/catalog" className="mt-6 inline-flex items-center gap-2 rounded-full bg-[#D4AF37] px-5 py-3 text-xs font-semibold uppercase tracking-[0.2em] text-black transition hover:brightness-110">
                 Explorar catálogo <FiArrowRight size={15} />
               </Link>
