@@ -43,6 +43,9 @@ function Footer() {
 
         <div className="flex flex-col gap-4 border-t border-[#D4AF37]/10 pt-6 text-sm text-white/60 sm:flex-row sm:items-center sm:justify-between">
           <p>© 2026 OLYMPO PERFUMERÍA. Todos los derechos reservados.</p>
+          <a href="/admin" className="text-[#D4AF37] transition hover:text-[#F4D77B] hover:underline">
+            Acceder
+          </a>
         </div>
       </div>
     </footer>
